@@ -1,5 +1,5 @@
 ---
-title: "Nutritional Factors and Pediatric Allergic Trajectories"
+title: "Interplay of Nutritional Factors and Allergic Outcomes"
 subtitle: "BMIN503/EPID600 Final Project"
 author: "Stan Gabryszewski"
 format: html
@@ -14,30 +14,289 @@ embed-resources: true
 
 **Give a brief a description of your project and its goal(s), what data you are using to complete it, and what two faculty/staff in different fields you have spoken to about your project with a brief summary of what you learned from each person. Include a link to your final project GitHub repository.**
 
-This project will analyze data from the National Health and Nutrition Examination Survey (NHANES) to explore links between nutritional factors and allergic diseases in the pediatric U.S. population. Using regression modeling and machine learning methods, the study will examine how dietary patterns, growth metrics, and nutritional biomarkers associate with pediatric allergic outcomes, including atopic dermatitis (AD), IgE-mediated food allergy (IgE-FA), asthma, and allergic rhinitis (AR). This analysis has the potential to identify modifiable nutritional factors that influence allergic health trajectories in childhood.
+This project will analyze data from the National Health and Nutrition Examination Survey (NHANES) to explore links between nutritional factors and allergic diseases in the U.S. population. Using regression modeling and machine learning methods, the study will examine how dietary patterns, growth metrics, and nutritional biomarkers associate with allergic outcomes, including atopic dermatitis (AD), IgE-mediated food allergy (IgE-FA), asthma, and allergic rhinitis (AR). This analysis has the potential to identify modifiable nutritional factors that influence allergic health trajectories.
 
 The two faculty with who I discussed this project are Dr. Robert Grundmeier (Professor of Pediatrics at CHOP and Penn, Department of Biomedical and Health Informatics) and Dr. Rich Tsui (Professor of Anesthesiology and Critical Care at CHOP and Penn, Department of Anesthesiology and Critical Care Medicine). With Dr. Grundmeier, I discussed the analytic framework for defining allergic disease cohorts within the NHANES database. With both Dr. Grundmeier and Dr. Tsui, I discussed the selection, application, validation, interpretation, and visualization of machine learning approaches that will be used to identify nutritional predictors of allergic disease risk.
 
-GitHub repository link: [Final Project Repo](https://github.com/gabryszews/BMIN503_Final_Project)
+**GitHub repository link:** [Final Project Repo](https://github.com/gabryszews/BMIN503_Final_Project)
 
 ## Introduction {#sec-introduction}
 
 **Describe the problem addressed, its significance, and some background to motivate the problem. This should extend what is in the @sec-overview. Explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.**
 
-The allergic march – typically progressing from AD to IgE-FA, asthma, AR, and eventually EoE – serves as a population-level paradigm for the sequential development of allergic diseases in children. Globally, the prevalence of allergic disorders has risen sharply in recent decades, yet how environmental and heritable factors interplay to influence these outcomes remains incompletely understood. Among them, nutrition is an important and incompletely explored domain. Nutritional exposures shape immune development, epithelial barrier integrity, and microbial diversity, all of which may modulate allergic risk. A clearer understanding of how nutritional factors contribute to allergy onset and progression could inform new strategies for prevention and management. To date, few analyses have comprehensively integrated information about nutritional status (e.g. anthropometrics, dietary intake, biomarker data) and allergic outcomes within a nationally representative pediatric cohort. The extensive nutritional and health data available in the National Health and Nutrition Examination Survey (NHANES) database provide a unique opportunity to address this gap and generate data-driven hypotheses.
+The allergic march – typically progressing from AD to IgE-FA, asthma, AR, and eventually EoE – serves as a population-level paradigm for the sequential development of allergic diseases. Globally, the prevalence of allergic disorders has risen sharply in recent decades, yet how environmental and heritable factors interplay to influence these outcomes remains incompletely understood. Among them, nutrition is an important and incompletely explored domain. Nutritional exposures shape immune development, epithelial barrier integrity, and microbial diversity, all of which may modulate allergic risk. A clearer understanding of how nutritional factors contribute to allergy onset and progression could inform new strategies for prevention and management. To date, few analyses have comprehensively integrated information about nutritional status (e.g. anthropometrics, dietary intake, biomarker data) and allergic outcomes within a nationally representative cohort. The extensive nutritional and health data available in the National Health and Nutrition Examination Survey (NHANES) database provide a unique opportunity to address this gap and generate data-driven hypotheses.
 
-The questions addressed in this project are inherently multidisciplinary, spanning allergy-immunology, clinical nutrition, statistics, epidemiology, and informatics. Knowledge in allergy-immunology is needed for a clinical and immunological framework, while knowledge in clinical nutrition is needed to contextualize anthropometric and dietary data. Moreover, knowledge in epidemiology is needed for a population-level understanding of disease patterns as well as understanding of study survey design, and lastly informatics knowledge is needed for data analysis. By integrating these disciplines, this project aims to identify and interpret relationships between various nutritional factors and allergic disease risk in children. I am positioned to undertake this work, drawing on my dual clinical board certifications in allergy-immunology and clinical nutrition, my supplemental training in epidemiology, and my ongoing learning in biomedical informatics, as facilitated by my coursework and support from my mentorship team (Drs. Robert Grundmeier and Rich Tsui).
+The questions addressed in this project are inherently multidisciplinary, spanning allergy-immunology, clinical nutrition, statistics, epidemiology, and informatics. Knowledge in allergy-immunology is needed for a clinical and immunological framework, while knowledge in clinical nutrition is needed to contextualize anthropometric and dietary data. Moreover, knowledge in epidemiology is needed for a population-level understanding of disease patterns as well as understanding of how to account for study survey design, and lastly informatics knowledge is needed for data analysis. By integrating these disciplines, this project aims to identify and interpret relationships between various nutritional factors and allergic disease risk. I am positioned to undertake this work, drawing on my dual clinical experience in allergy-immunology and clinical nutrition, my supplemental training in epidemiology, and my ongoing learning in biomedical informatics, as facilitated by my coursework and support from my mentorship team (Drs. Robert Grundmeier and Rich Tsui).
 
 ## Methods {#sec-methods}
 
 **Describe the data used and general methodological approach used to address the problem described in the @sec-introduction. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why.**
 
-NHANES data will be analyzed to assess associations between nutritional factors and allergic conditions in U.S. children. Weighted regression models will account for the complex national survey design to estimate relationships between specific nutrients, biomarkers, and allergic outcomes. Exploratory machine learning methods, including random forest and XGBoost, will be applied to identify nutritional variables most predictive of allergy risk. Visual outputs will include forest plots for regression estimates, ROC curves for model performance, and variable importance or SHAP plots to interpret key predictors.
+My primary analysis will examine subjects in the NHANES database between 2007 and 2018 to study allergic conditions, including atopic dermatitis, food allergy, asthma, and allergic rhinitis. I will first estimate the prevalence of each allergic condition in this population. This will be followed by survey-weighted logistic regressions to evaluate associations between allergic outcomes and nutritional biomarkers, dietary intake, anthropometric measures, environmental exposures, and demographic factors. Next, I will conduct machine-learning analyses using Random Forest and XGBoost models, applying a 70/30 train-test split with 10-fold cross-validation. Model performance will be compared across allergic outcomes, and SHAP analyses will be used to identify variables that most strongly influence prediction. A secondary analysis will incorporate food-specific IgE laboratory data (available in NHANES 2007–2008) to assess whether inclusion of IgE sensitization measures enhances the prediction of allergic conditions.
+
+In the interim, I have initiated exploratory analysis with a subset of NHANES data and variables of interest, as shown below.\
+
+**Install and load packages**
+
+```{r}
+#| eval: false
+# Install packages
+install.packages("broom")
+install.packages("cowplot")
+install.packages("nhanesA")
+install.packages("scales")
+install.packages("srvyr")
+install.packages("survey")
+install.packages("tidyverse")
+```
+
+```{r}
+# Load packages
+library(broom)
+library(cowplot)
+library(nhanesA)
+library(scales)
+library(srvyr)
+library(survey)
+library(tidyverse)
+```
+
+**Prepare dataset**
+
+```{r}
+# Load modules (demographics, reported allergic conditions, BMI, vitamin D level)
+demo <- nhanes("DEMO_I")
+mcq  <- nhanes("MCQ_I")
+bmx  <- nhanes("BMX_I")
+vid  <- nhanes("VID_I")
+
+# Helper function to turn binary responses to 1/0
+to01 <- function(x) {
+  x <- as.character(x)
+  case_when(
+    x %in% c("1","Yes","YES","yes") ~ 1,
+    x %in% c("2","No","NO","no")    ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
+# Clean vitamin D
+vid_clean <- vid |>
+  transmute(
+    seqn = SEQN,
+    vitd_25oh = LBXVIDMS,
+    vitd_detect = case_when(
+      LBDVIDLC == "At or above the detection limit" ~ TRUE,
+      !is.na(LBDVIDLC) & grepl("Below|Less than|Under", LBDVIDLC, ignore.case = TRUE) ~ FALSE,
+      TRUE ~ NA
+    )
+  )
+
+# Select race variable
+race_vec <- if ("RIDRETH3" %in% names(demo)) demo$RIDRETH3 else demo$RIDRETH1
+
+# Merge modules
+nhanes_i <- demo |>
+  select(
+    seqn    = SEQN,
+    age     = RIDAGEYR,
+    sex     = RIAGENDR,
+    income  = INDHHIN2,
+    sdmvpsu = SDMVPSU,
+    sdmvstra= SDMVSTRA,
+    wtint2yr= WTINT2YR,
+    wtmec2yr= WTMEC2YR
+  ) |>
+  mutate(race = race_vec) |>
+  left_join(
+    mcq |>
+      select(
+        seqn   = SEQN,
+        ad     = MCQ160A,
+        fa     = MCQ160F,
+        asthma = MCQ010,
+        ar     = MCQ160B
+      ),
+    by = "seqn"
+  ) |>
+  left_join(bmx |> select(seqn = SEQN, bmi = BMXBMI), by = "seqn") |>
+  left_join(vid_clean, by = "seqn") |>
+  mutate(
+    race   = ifelse(as.character(race) == "Other Race - Including Multi-Racial", "Other", as.character(race)),
+    ad     = to01(ad),
+    fa     = to01(fa),
+    asthma = to01(asthma),
+    ar     = to01(ar)
+  )
+
+# Interview-weight survey design
+des_int <- svydesign(
+  ids = ~sdmvpsu,
+  strata = ~sdmvstra,
+  weights = ~wtint2yr,
+  nest = TRUE,
+  data = nhanes_i
+)
+
+# MEC/lab-weight survey design
+des_mec <- svydesign(
+  ids = ~sdmvpsu,
+  strata = ~sdmvstra,
+  weights = ~wtmec2yr,
+  nest = TRUE,
+  data = nhanes_i
+)
+```
 
 ## Results {#sec-results}
 
-Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
+**Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.**
+
+Exploratory analyses of a subset of the data are shown below. These include weighted allergic disease prevalence, weighted means for the BMI and vitamin D, breakdowns of allergic conditions by sex and race/ethnicity, and weighted vs. unweighted univariable analyses of BMI and vitamin D.
+
+```{r}
+# Weighted allergic disease prevalence
+svymean(~asthma + ad + ar + fa, des_int, na.rm = TRUE)
+
+# Weighted means for BMI and vitamin D
+svymean(~bmi, des_mec, na.rm = TRUE)
+svymean(~vitd_25oh, des_mec, na.rm = TRUE)
+
+# Proportions of subjects with various allergic conditions (unweighted)
+nhanes_i |>
+  pivot_longer(cols = c(asthma, ad, ar, fa),
+               names_to = "condition", values_to = "value") |>
+  filter(!is.na(value)) |>
+  ggplot(aes(x = condition,
+             fill = factor(value, levels = c(1, 0), labels = c("Yes", "No")))) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = percent) +
+  labs(
+    x = "",
+    y = "Proportion",
+    fill = "",
+    title = "Allergic conditions (2015–2016)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
+# Plot of allergic conditions stratified by sex (unweighted)
+nhanes_i |>
+  pivot_longer(c(asthma, ad, ar, fa),
+               names_to = "condition", values_to = "value") |>
+  filter(!is.na(value)) |>
+  ggplot(aes(x = condition, fill = factor(value, levels = c(1, 0), labels = c("Yes", "No")))) +
+  geom_bar(position = "fill") +
+  facet_wrap(~sex) +
+  scale_y_continuous(labels = percent)  +
+  labs(
+    x = "",
+    y = "Proportion",
+    fill = "",
+    title = "Allergic conditions by sex (2015–2016)"
+  ) +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
+# Plot of allergic conditions stratified by race (unweighted)
+nhanes_i |>
+  pivot_longer(c(asthma, ad, ar, fa),
+               names_to = "condition", values_to = "value") |>
+  filter(!is.na(value), !is.na(race)) |>
+  ggplot(aes(x = condition, fill = factor(value, levels = c(1, 0), labels = c("Yes", "No")))) +
+  geom_bar(position = "fill") +
+  facet_wrap(~race) +
+  scale_y_continuous(labels = percent) +
+  labs(
+    x = "",
+    y = "Proportion",
+    fill = "",
+    title = "Allergic conditions by race/ethnicity (2015–2016)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+# Raw vs. weighted color coding
+man_cols <- c("raw" = "#E69F00", "weighted" = "#56B4E9")
+
+# Compare unweighted vs. weighted univariable logistic regression
+comp <- function(outcome, exposure) {
+  is_adult_only <- outcome %in% c("ad", "ar", "fa")
+  data_sub <- if (is_adult_only) {
+    nhanes_i |> filter(age >= 20)
+  } else {
+    nhanes_i
+  }
+
+  # Subset survey design
+  design_sub <- if (is_adult_only) {
+    subset(des_mec, age >= 20)
+  } else {
+    des_mec
+  }
+
+  fmla <- as.formula(paste0(outcome, " ~ ", exposure))
+
+  # Unweighted (raw) model
+  glm_mod <- glm(fmla, data = data_sub, family = binomial()) |>
+    tidy(conf.int = TRUE, exponentiate = TRUE) |>
+    mutate(method = "raw")
+
+  # Weighted model
+  svyglm_mod <- svyglm(fmla, design = design_sub, family = quasibinomial()) |>
+    tidy(conf.int = TRUE, exponentiate = TRUE) |>
+    mutate(method = "weighted")
+
+  bind_rows(glm_mod, svyglm_mod) |>
+    filter(term != "(Intercept)") |>
+    mutate(outcome = outcome, exposure = exposure, .before = 1)
+}
+
+# Outcomes and exposures
+outcomes  <- c("asthma", "ad", "ar", "fa")
+exposures <- c("bmi", "vitd_25oh")
+
+# Run univariable models for outcomes and exposures
+results_uni <- lapply(outcomes, function(o) {
+  lapply(exposures, function(x) comp(o, x)) |> bind_rows()
+}) |> bind_rows()
+
+# Plot helper function: show ORs for a given exposure across outcomes (raw vs. weighted)
+plot_uni <- function(exposure_name) {
+  results_uni |>
+    filter(exposure == exposure_name) |>
+    ggplot(aes(x = term, y = estimate, color = method)) +
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_pointrange(aes(ymin = conf.low, ymax = conf.high),
+                    position = position_dodge(0.3)) +
+    facet_wrap(~outcome) +
+    scale_color_manual(values = man_cols) +
+    scale_y_continuous(trans = "log10") +
+    labs(
+      title = paste("Univariable odds ratios for", exposure_name, "(raw vs weighted)"),
+      x = "",
+      y = "Odds ratio (95% CI)",
+      color = ""
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+}
+
+# Plots for BMI and vitamin D
+plot_uni("bmi")
+plot_uni("vitd_25oh")
+```
 
 ## Conclusion
 
-This the conclusion. The @sec-results can be invoked here.
+**This is the conclusion. The @sec-results can be invoked here.**
