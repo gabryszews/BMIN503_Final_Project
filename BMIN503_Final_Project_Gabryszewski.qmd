@@ -1,6 +1,6 @@
 ---
 title: "Interplay of Nutritional Factors and Allergic Outcomes"
-subtitle: "BMIN503/EPID600 Final Project"
+subtitle: "BMIN5030/EPID600 Final Project"
 author: "Stan Gabryszewski"
 format: html
 editor: visual
@@ -32,9 +32,9 @@ The questions addressed in this project are inherently multidisciplinary, spanni
 
 **Describe the data used and general methodological approach used to address the problem described in the @sec-introduction. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why.**
 
-My primary analysis will examine subjects in the NHANES database between 2007 and 2018 to study allergic conditions, including atopic dermatitis, food allergy, asthma, and allergic rhinitis. I will first estimate the prevalence of each allergic condition in this population. This will be followed by survey-weighted logistic regressions to evaluate associations between allergic outcomes and nutritional biomarkers, dietary intake, anthropometric measures, environmental exposures, and demographic factors. Next, I will conduct machine-learning analyses using Random Forest and XGBoost models, applying a 70/30 train-test split with 10-fold cross-validation. Model performance will be compared across allergic outcomes, and SHAP analyses will be used to identify variables that most strongly influence prediction. A secondary analysis will incorporate food-specific IgE laboratory data (available in NHANES 2007–2008) to assess whether inclusion of IgE sensitization measures enhances the prediction of allergic conditions.
+My primary analysis will include adults aged ≥20 years from the NHANES 2007–2018 cycles to evaluate four allergic conditions: atopic dermatitis, food allergy, asthma, and allergic rhinitis. I will first estimate the weighted prevalence of each outcome. Survey‐weighted logistic regression models will then be used to examine associations between allergic outcomes and a clinically relevant set of predictors, including anthropometric and adiposity measures, cardiometabolic and inflammatory biomarkers (e.g., vitamin D, CRP, lipids, HbA1c, blood pressure), diet quality (nutrient-level intakes and Dietary Inflammatory Index), as well as other features such as smoking history, socioeconomic status, and family history of asthma as a proxy for family history of atopy. For prediction, I will develop and compare different machine learning models (LASSO logistic regression, Random Forest, and XGBoost) for each allergic outcome using a 70/30 train–test split with cross-validation. Model performance will be evaluated using AUROC, and model interpretability will be assessed for each model. A secondary analysis will focus on the subset of adults with available food-specific IgE measurements. In this subsample, I will perform prediction models with and without IgE sensitization variables to assess the value of predicting food allergy.
 
-In the interim, I have initiated exploratory analysis with a subset of NHANES data and variables of interest, as shown below.\
+Thus far, I have downloaded NHANES survey data for select variables of interest, and these have been combined into an analytic dataset. As there are inconsistencies in variables across survey years, this is a work in progress. Of note, when I initiated the study, I wanted to examine allergy rates in children but then discovered that the data for children more scarce, including no data for eczema, food allergy, or allergic rhinitis for many survey cycles. As such, I shifted the analysis to focus on the 20-40 age range. The data preparation section below includes a plot of the non-missingness of select NHANES variables, and I will add additional variables in the coming days. In addition an exploratory weighted vs. unweighted logistic regression is included in the Results section.
 
 **Install and load packages**
 
@@ -64,237 +64,743 @@ library(tidyverse)
 **Prepare dataset**
 
 ```{r}
-# Load modules (demographics, reported allergic conditions, BMI, vitamin D level)
-demo <- nhanes("DEMO_I")
-mcq  <- nhanes("MCQ_I")
-bmx  <- nhanes("BMX_I")
-vid  <- nhanes("VID_I")
+# Data handling functions --------------------------------------------------------------------
 
-# Helper function to turn binary responses to 1/0
+## Define NHANES cycles (i.e., 2007–2018, E–J)
+cycles <- c("E", "F", "G", "H", "I", "J")
+
+## Load NHANES module across multiple cycles 
+load_nhanes_module <- function(module, cycles_vec = cycles, keep_vars = NULL) {
+  
+  ### Create file tags with cycle label (e.g., DEMO-->DEMO_E)
+  module_years <- paste0(module, "_", cycles_vec)
+  
+  ### Create status tibble to track download success and row counts
+  status <- tibble(
+    file_tag = module_years,
+    ok       = FALSE,
+    n_rows   = NA_integer_,
+    note     = NA_character_
+  )
+  
+  ### Create list to hold data frames for each cycle
+  dfs <- vector("list", length(module_years))
+  
+  ### Loop over each module-year combination
+  for (i in seq_along(module_years)) {
+    x <- module_years[i]
+    
+    out <- tryCatch(
+      {
+        message("Attempting to download: ", x)
+        
+        #### Download data from nhanesA and convert to data frame
+        df <- nhanes(x) |> as.data.frame()
+        
+        #### Select only variables from keep_vars
+        if (!is.null(keep_vars)) {
+          df <- df |>
+            select(any_of(keep_vars))
+        }
+        
+        #### Record how many rows were loaded
+        n <- nrow(df)
+        status$n_rows[i] <- n
+        
+        if (n == 0) {
+          ##### Record if empty table and drop
+          status$ok[i]   <- FALSE
+          status$note[i] <- "Downloaded, 0 rows"
+          warning("File ", x, " downloaded but has 0 rows.")
+          df <- NULL
+        } else {
+          ##### For successful load, mark OK and store file tag
+          status$ok[i]   <- TRUE
+          status$note[i] <- "Loaded"
+          df$file_tag    <- x
+        }
+        
+        df
+      },
+      error = function(e) {
+        ##### If download fails, capture error and continue
+        status$ok[i]   <- FALSE
+        status$note[i] <- paste("ERROR:", conditionMessage(e))
+        warning("File ", x, " could not be downloaded: ", conditionMessage(e))
+        return(NULL)
+      }
+    )
+    
+    ### Store result for cycle
+    dfs[[i]] <- out
+  }
+  
+  ### Keep only non-null data frames
+  dfs_nonempty <- dfs[!vapply(dfs, is.null, logical(1))]
+  
+  ### Print summary table of load status
+  message("\nSummary for module ", module, ":")
+  print(status)
+  
+  ### Give error if nothing loaded
+  if (length(dfs_nonempty) == 0) {
+    stop("No cycles successfully downloaded for module: ", module)
+  }
+  
+  ### Bind all (non-empty) cycles into one data frame
+  bind_rows(dfs_nonempty)
+}
+
+## Convert yes/no codes to 0/1 (1 yes; 0 no; or NA)
 to01 <- function(x) {
   x <- as.character(x)
   case_when(
-    x %in% c("1","Yes","YES","yes") ~ 1,
-    x %in% c("2","No","NO","no")    ~ 0,
+    x %in% c("1", "Yes", "YES", "yes") ~ 1,
+    x %in% c("2", "No",  "NO",  "no")  ~ 0,
     TRUE ~ NA_real_
   )
 }
 
-# Clean vitamin D
-vid_clean <- vid |>
+## Convert SDDSRVYR into a year-range cycle label
+cycle_label <- function(s) {
+  # Try to pull out "2007-2008" style years from labels like "NHANES 2007-2008 Public Release"
+  years <- str_extract(as.character(s), "\\d{4}-\\d{4}")
+  
+  case_when(
+    # If the label already contains a year range, use it
+    !is.na(years) ~ years,
+    
+    # If not, use SDDSRVYR codes (5–10)
+    TRUE ~ recode(
+      as.numeric(s),
+      `5`  = "2007-2008",
+      `6`  = "2009-2010",
+      `7`  = "2011-2012",
+      `8`  = "2013-2014",
+      `9`  = "2015-2016",
+      `10` = "2017-2018",
+      .default = NA_character_
+    )
+  )
+}
+
+## Check variable availability by NHANES cycle (including missingness)
+check_var_availability <- function(data, vars = NULL) {
+  
+  # If no vars supplied, default to all columns except for IDs, weights, etc.
+  if (is.null(vars)) {
+    vars <- setdiff(
+      names(data),
+      c("seqn", "wtint2yr", "wtmec2yr", "wtint12yr", "wtmec12yr",
+        "sdmvpsu", "sdmvstra", "sddsrvyr", "cycle_str")
+    )
+  }
+  
+  map_dfr(vars, function(v) {
+    data |>
+      group_by(cycle = sddsrvyr) |>
+      summarise(
+        variable      = v,
+        total         = n(),
+        n_nonmissing  = sum(!is.na(.data[[v]])),
+        n_missing     = sum(is.na(.data[[v]])),
+        prop_missing  = mean(is.na(.data[[v]])),
+        .groups       = "drop"
+      )
+  }) |>
+    arrange(variable, cycle)
+}
+
+# Load modules with selected variables --------------------------------------------------------
+
+## DEMO module: demographics, design variables, and weights
+demo_keep <- c(
+  "SEQN",       # participant ID
+  "RIDAGEYR",   # age in years at screening
+  "RIAGENDR",   # sex (1 = male; 2 = female)
+  "RIDRETH1",   # race/ethnicity (original coding; early cycles)
+  "RIDRETH3",   # race/ethnicity (updated coding; later cycles)
+  "DMDEDUC2",   # education level
+  "INDFMPIR",   # family poverty-to-income ratio
+  "INDHHIN2",   # household income category
+  "SDDSRVYR",   # 2-year survey cycle indicator (5–10 for 2007–2018)
+  "SDMVPSU",    # primary sampling unit
+  "SDMVSTRA",   # sampling strata
+  "WTINT2YR",   # 2-year interview weight
+  "WTMEC2YR",   # 2-year MEC exam/lab weight
+  "RIDEXPRG"    # pregnancy status 
+)
+
+demo <- load_nhanes_module("DEMO", keep_vars = demo_keep)
+
+## MCQ module: self-reported allergic conditions
+mcq_keep <- c(
+  "SEQN",      # participant ID
+  "MCQ160A",   # eczema/atopic dermatitis
+  "MCQ160F",   # food allergy
+  "MCQ010",    # asthma
+  "MCQ160B"    # hay fever/allergic rhinitis
+)
+
+mcq <- load_nhanes_module("MCQ", keep_vars = mcq_keep)
+
+## BMX module: anthropometry
+bmx_keep <- c(
+  "SEQN",      # participant ID
+  "BMXBMI",    # body mass index (kg/m^2)
+  "BMXWAIST",  # waist circumference (cm)
+  "BMXHT",     # standing height (cm)
+  "BMXWT"      # body weight (kg)
+)
+
+bmx <- load_nhanes_module("BMX", keep_vars = bmx_keep)
+
+## VID module: vitamin D lab
+vid_keep <- c(
+  "SEQN",       # participant ID
+  "LBDVIDLC",   # 25(OH)D detection limit flag (0 = below LOD; 1 = at/above LOD)
+  "LBXVIDMS",   # 25(OH)D concentration (LC-MS/MS)
+  "LBXVIDMSI",  # 25(OH)D concentration (alternate naming)
+  "LBXVIDLC"    # additional 25(OH)D concentration variable (cycle-dependent)
+)
+
+vid <- load_nhanes_module("VID", keep_vars = vid_keep)
+
+## SMQ module: cigarette smoking
+smq_keep <- c(
+  "SEQN",     # participant ID
+  "SMQ020",   # ever smoked at least 100 cigarettes in life (1 = yes; 2 = no)
+  "SMQ040"    # do you now smoke cigarettes? (1 every day; 2 some days; 3 not at all)
+)
+
+smq <- load_nhanes_module("SMQ", keep_vars = smq_keep)
+
+## HIQ module: health insurance coverage
+hiq_keep <- c(
+  "SEQN",     # participant ID
+  "HIQ011"    # covered by any health insurance? (1 = yes; 2 = no; 7/9 = missing)
+)
+
+hiq <- load_nhanes_module("HIQ", keep_vars = hiq_keep)
+
+## FSQ module: household food security
+fsq_keep <- c(
+  "SEQN",   # participant ID
+  "FSDHH"   # household food security category (1 = full; 2 = marginal; 3 = low; 4 = very low)
+)
+
+fsq <- load_nhanes_module("FSQ", keep_vars = fsq_keep)
+
+## ALQ module: alcohol use
+alq_keep <- c(
+  "SEQN",      # participant ID
+  "ALQ130"     # frequency of alcohol use in past 12 months
+)
+
+alq <- load_nhanes_module("ALQ", keep_vars = alq_keep)
+
+# Clean modules -------------------------------------------------------------------------------
+
+## Clean DEMO ---------------------------------------------------------------------------------
+
+demo_clean <- demo |>
+  mutate(
+    sddsrvyr = SDDSRVYR,
+    # Use either RIDRETH3 or RIDRETH1
+    race_raw = coalesce(
+      as.character(RIDRETH3),
+      as.character(RIDRETH1)
+    )
+  ) |>
   transmute(
-    seqn = SEQN,
-    vitd_25oh = LBXVIDMS,
-    vitd_detect = case_when(
-      LBDVIDLC == "At or above the detection limit" ~ TRUE,
-      !is.na(LBDVIDLC) & grepl("Below|Less than|Under", LBDVIDLC, ignore.case = TRUE) ~ FALSE,
-      TRUE ~ NA
+    seqn    = SEQN,
+    age     = as.numeric(RIDAGEYR),
+    sex     = RIAGENDR,
+    # Collapse "Other Race - Including Multi-Racial" into "Other"
+    race    = case_when(
+      race_raw == "Other Race - Including Multi-Racial" ~ "Other",
+      TRUE ~ race_raw
+    ),
+    educ    = DMDEDUC2,
+    pir     = INDFMPIR,
+    income_cat_demo = INDHHIN2,
+    sddsrvyr,
+    cycle_str = cycle_label(sddsrvyr),
+    sdmvpsu  = SDMVPSU,
+    sdmvstra = SDMVSTRA,
+    wtint2yr = WTINT2YR,
+    wtmec2yr = WTMEC2YR,
+    preg     = RIDEXPRG
+  )
+
+## Clean MCQ ----------------------------------------------------------------------------------
+
+mcq_clean <- mcq |>
+  select(
+    seqn       = SEQN,
+    ad_raw     = MCQ160A,
+    fa_raw     = MCQ160F,
+    asthma_raw = MCQ010,
+    ar_raw     = MCQ160B
+  ) |>
+  mutate(
+    ad     = to01(ad_raw),
+    fa     = to01(fa_raw),
+    asthma = to01(asthma_raw),
+    ar     = to01(ar_raw)
+  )
+
+## Clean BMX ----------------------------------------------------------------------------------
+
+bmx_clean <- bmx |>
+  transmute(
+    seqn      = SEQN,
+    bmi       = BMXBMI,
+    waist_cm  = BMXWAIST,
+    height_cm = BMXHT,
+    weight_kg = BMXWT
+  )
+
+## Clean VID ----------------------------------------------------------------------------------
+
+### Identify vitamin D lab variables (LBXVID*) that may hold 25(OH)D values
+vitd_vars <- names(vid)[grepl("^LBXVID", names(vid))]
+
+### Check whether a detection-limit flag variable exists
+has_lbdvidlc <- "LBDVIDLC" %in% names(vid)
+
+if (has_lbdvidlc) {
+  # If detection-limit info is available, derive both 25(OH)D value and detection flag
+  vid_clean <- vid |>
+    mutate(
+      # Coalesce multiple possible 25(OH)D variables into one
+      vitd_25oh = reduce(across(all_of(vitd_vars)), coalesce),
+      # Create a flag for being at/above vs. below detection limit
+      vitd_detect = case_when(
+        LBDVIDLC == 1 ~ TRUE,   # at or above detection limit
+        LBDVIDLC == 0 ~ FALSE,  # below detection limit
+        TRUE ~ NA
+      )
+    ) |>
+    transmute(
+      seqn = SEQN,
+      vitd_25oh,
+      vitd_detect
+    )
+} else {
+  # If no detection-limit info, just keep the 25(OH)D value
+  vid_clean <- vid |>
+    mutate(
+      vitd_25oh = reduce(across(all_of(vitd_vars)), coalesce)
+    ) |>
+    transmute(
+      seqn = SEQN,
+      vitd_25oh,
+      vitd_detect = NA
+    )
+}
+
+## Clean SMQ ----------------------------------------------------------------------------------
+
+smq_clean <- smq |>
+  transmute(
+    seqn       = SEQN,
+    smoked_100 = as.numeric(SMQ020),  # ever smoked >=100 cigarettes
+    smoke_now  = as.numeric(SMQ040)   # current smoking frequency
+  ) |>
+  mutate(
+    smoking_status = case_when(
+      smoked_100 == 2 ~ "Never",
+      smoked_100 == 1 & smoke_now == 3 ~ "Former",
+      smoked_100 == 1 & smoke_now %in% c(1, 2) ~ "Current",
+      TRUE ~ NA_character_
     )
   )
 
-# Select race variable
-race_vec <- if ("RIDRETH3" %in% names(demo)) demo$RIDRETH3 else demo$RIDRETH1
+## Clean HIQ ----------------------------------------------------------------------------------
 
-# Merge modules
-nhanes_i <- demo |>
-  select(
+hiq_clean <- hiq |>
+  transmute(
     seqn    = SEQN,
-    age     = RIDAGEYR,
-    sex     = RIAGENDR,
-    income  = INDHHIN2,
-    sdmvpsu = SDMVPSU,
-    sdmvstra= SDMVSTRA,
-    wtint2yr= WTINT2YR,
-    wtmec2yr= WTMEC2YR
-  ) |>
-  mutate(race = race_vec) |>
-  left_join(
-    mcq |>
-      select(
-        seqn   = SEQN,
-        ad     = MCQ160A,
-        fa     = MCQ160F,
-        asthma = MCQ010,
-        ar     = MCQ160B
-      ),
-    by = "seqn"
-  ) |>
-  left_join(bmx |> select(seqn = SEQN, bmi = BMXBMI), by = "seqn") |>
-  left_join(vid_clean, by = "seqn") |>
-  mutate(
-    race   = ifelse(as.character(race) == "Other Race - Including Multi-Racial", "Other", as.character(race)),
-    ad     = to01(ad),
-    fa     = to01(fa),
-    asthma = to01(asthma),
-    ar     = to01(ar)
+    insured = to01(HIQ011)  # 1 = insured; 0 = not insured; else NA
   )
 
-# Interview-weight survey design
-des_int <- svydesign(
-  ids = ~sdmvpsu,
-  strata = ~sdmvstra,
-  weights = ~wtint2yr,
-  nest = TRUE,
-  data = nhanes_i
+## Clean FSQ ----------------------------------------------------------------------------------
+
+fsq_clean <- fsq |>
+  transmute(
+    seqn = SEQN,
+    foodsec_raw = as.numeric(FSDHH),
+    food_security = case_when(
+      foodsec_raw == 1 ~ "Full",
+      foodsec_raw == 2 ~ "Marginal",
+      foodsec_raw == 3 ~ "Low",
+      foodsec_raw == 4 ~ "Very low",
+      TRUE ~ NA_character_ 
+    )
+  )
+
+## Clean ALQ ----------------------------------------------------------------------------------
+
+alq_clean <- alq |>
+  transmute(
+    seqn         = SEQN,
+    alcohol_freq = ALQ130
+  ) |>
+  mutate(
+    # alcohol_any = 1 if any reported drinking in past 12 months, 0 if none
+    alcohol_any = case_when(
+      is.na(alcohol_freq) ~ NA_real_,
+      alcohol_freq %in% c(777, 999) ~ NA_real_,  # refused / don't know
+      alcohol_freq == 0 ~ 0,
+      alcohol_freq > 0  ~ 1
+    )
+  )
+
+# Merge modules -------------------------------------------------------------------------------
+
+nhanes_all <- demo_clean |>
+  left_join(mcq_clean,  by = "seqn") |>
+  left_join(bmx_clean,  by = "seqn") |>
+  left_join(vid_clean,  by = "seqn") |>
+  left_join(smq_clean,  by = "seqn") |>
+  left_join(hiq_clean,  by = "seqn") |>
+  left_join(fsq_clean,  by = "seqn") |>
+  left_join(alq_clean,  by = "seqn")
+
+# Filter to study population ------------------------------------------------------------------
+
+nhanes_analytic <- nhanes_all |>
+  # Adults age 20–40 years
+  filter(age >= 20, age <= 40) |>
+  # Exclude pregnant participants
+  filter(
+    is.na(preg) |
+      !preg %in% c(
+        "Yes, positive lab pregnancy test or self-reported pregnant at exam"
+      )
+  ) |>
+  mutate(
+    # 12-year combined interview and MEC weights
+    wtint12yr = wtint2yr / length(cycles),
+    wtmec12yr = wtmec2yr / length(cycles),
+    
+    # Sex factors
+    sex_f = factor(
+      as.character(sex),
+      levels = c("Male", "Female")
+      ),
+    
+    ##Smoking factors
+    smoking_f = factor(smoking_status,
+                       levels = c("Never", "Former", "Current")),
+    
+    # Allergic outcome factors
+    ad_f     = factor(ad,     levels = c(0, 1), labels = c("No", "Yes")),
+    ar_f     = factor(ar,     levels = c(0, 1), labels = c("No", "Yes")),
+    fa_f     = factor(fa,     levels = c(0, 1), labels = c("No", "Yes")),
+    asthma_f = factor(asthma, levels = c(0, 1), labels = c("No", "Yes")),
+    
+    # Education factor
+    educ_f = factor(educ),
+    
+    ## Food security factor
+    food_security_f = factor(
+      food_security,
+      levels  = c("Full", "Marginal", "Low", "Very low"),
+      ordered = TRUE
+    ),
+    
+    # Insurance indicator factor
+    insured_f = factor(
+      insured,
+      levels = c(0, 1),
+      labels = c("No", "Yes")
+    ),
+    
+    # Race factor
+    race_f = factor(race),
+    
+    # Smoking status factor
+    smoking_status_f = factor(
+      smoking_status,
+      levels = c("Never", "Former", "Current")
+    ),
+    
+    # Pregnancy flag
+    preg_flag = case_when(
+      preg == "Yes, positive lab pregnancy test or self-reported pregnant at exam" ~ 1,
+      preg %in% c(
+        "SP not pregnant at exam",
+        "The participant was not pregnant at exam"
+      ) ~ 0,
+      preg %in% c(
+        "Cannot ascertain if SP is pregnant at exam",
+        "Cannot ascertain if the participant is pregnant at exam"
+      ) ~ NA_real_,
+      TRUE ~ NA_real_
+    ),
+    preg_flag_f = factor(
+      preg_flag,
+      levels = c(0, 1),
+      labels = c("Not pregnant", "Pregnant")
+    )
+  )
+
+# Incorporate survey designs ------------------------------------------------------------------
+
+des_int_12yr <- svydesign(
+  ids     = ~sdmvpsu,
+  strata  = ~sdmvstra,
+  weights = ~wtint12yr,
+  nest    = TRUE,
+  data    = nhanes_analytic
 )
 
-# MEC/lab-weight survey design
-des_mec <- svydesign(
-  ids = ~sdmvpsu,
-  strata = ~sdmvstra,
-  weights = ~wtmec2yr,
-  nest = TRUE,
-  data = nhanes_i
+des_mec_12yr <- svydesign(
+  ids     = ~sdmvpsu,
+  strata  = ~sdmvstra,
+  weights = ~wtmec12yr,
+  nest    = TRUE,
+  data    = nhanes_analytic
 )
+
+# Check variable availability across cycles ---------------------------------------------------
+
+## Variables of interest
+vars_focus <- c(
+  "ad_f",
+  "age",
+  "alcohol_any",
+  "ar_f",
+  "asthma_f",
+  "bpi",
+  "educ_f",
+  "fa_f",
+  "food_security_f",
+  "height_cm",
+  "insured_f",
+  "race_f",
+  "sex_f",
+  "smoking_f",
+  "smoking_status_f",
+  "vitd_25oh",
+  "waist_cm",
+  "weight_kg"
+)
+
+## Check availability of full set of variables
+availability_all <- check_var_availability(nhanes_analytic)
+
+## Check availability of variables of interest
+availability_sel <- availability_all |>
+  filter(variable %in% vars_focus)
+
+## Add cycle labels and ordering
+availability_sel <- availability_sel |>
+  mutate(
+    cycle_label = cycle_label(cycle),
+    cycle_label = factor(
+      cycle_label,
+      levels = c(
+        "2007-2008",
+        "2009-2010",
+        "2011-2012",
+        "2013-2014",
+        "2015-2016",
+        "2017-2018"
+      )
+    )
+  )
+
+## Plot availability for selected variables
+availability_sel |>
+  ggplot(aes(x = cycle_label, y = n_nonmissing)) +
+  geom_col() +
+  facet_wrap(~ variable, scales = "free_y") +
+  labs(
+    x = "NHANES Cycle",
+    y = "Non-missing Count",
+    title = "NHANES Variable Availability by Cycle"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title  = element_text(size = 14, face = "bold")
+  )
 ```
 
 ## Results {#sec-results}
 
 **Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.**
 
-Exploratory analyses of a subset of the data are shown below. These include weighted allergic disease prevalence, weighted means for the BMI and vitamin D, breakdowns of allergic conditions by sex and race/ethnicity, and weighted vs. unweighted univariable analyses of BMI and vitamin D.
+Exploratory analyses are shown below. These include weighted allergic disease prevalence, weighted means for the BMI and vitamin D, breakdowns of allergic conditions by sex and race/ethnicity, and weighted vs. unweighted univariable analyses of BMI and vitamin D. The weighted allergic prevalences for asthma, eczema, allergic rhinitis, and food allergy were 16.7%, 6.6%, 0.3%, and 0.4%, respectively. The weighted means for BMI and vitamin D level were 28.5 kg/m\^2 and 62.8 ng/ml, respectively. Unweighted prevalence plots – overall and stratified by sex and race/ethnicity – are included below. In addition, I performed logistic regression of unweighted vs. weighted models to compare how BMI and vitamin D relate to allergic conditions. Overall, BMI appeared to have modest but significant associations with asthma, eczema, and allergic rhinitis. Vitamin D did not appear to be associated with any allergic condition.
 
 ```{r}
 # Weighted allergic disease prevalence
-svymean(~asthma + ad + ar + fa, des_int, na.rm = TRUE)
+svymean(~asthma + ad + ar + fa, des_int_12yr, na.rm = TRUE)
 
-# Weighted means for BMI and vitamin D
-svymean(~bmi, des_mec, na.rm = TRUE)
-svymean(~vitd_25oh, des_mec, na.rm = TRUE)
+# Weighted means for BMI 
+svymean(~bmi, des_mec_12yr, na.rm = TRUE)
 
-# Proportions of subjects with various allergic conditions (unweighted)
-nhanes_i |>
-  pivot_longer(cols = c(asthma, ad, ar, fa),
-               names_to = "condition", values_to = "value") |>
+# Weighted means for 25(OH) vitamin D level
+svymean(~vitd_25oh, des_mec_12yr, na.rm = TRUE)
+
+# Unweighted means for allergic conditions
+nhanes_analytic |>
+  pivot_longer(
+    cols = c(asthma, ad, ar, fa),
+    names_to = "condition",
+    values_to = "value"
+  ) |>
   filter(!is.na(value)) |>
-  ggplot(aes(x = condition,
-             fill = factor(value, levels = c(1, 0), labels = c("Yes", "No")))) +
+  ggplot(aes(
+    x = condition,
+    fill = factor(value, levels = c(1, 0), labels = c("Yes", "No"))
+  )) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = percent) +
   labs(
     x = "",
     y = "Proportion",
     fill = "",
-    title = "Allergic conditions (2015–2016)"
+    title = "Allergic conditions (NHANES 2007–2018, age 20–40)"
   ) +
   theme_minimal() +
   theme(
     plot.title = element_text(hjust = 0.5)
   )
 
-# Plot of allergic conditions stratified by sex (unweighted)
-nhanes_i |>
-  pivot_longer(c(asthma, ad, ar, fa),
-               names_to = "condition", values_to = "value") |>
-  filter(!is.na(value)) |>
-  ggplot(aes(x = condition, fill = factor(value, levels = c(1, 0), labels = c("Yes", "No")))) +
+# Unweighted prevalence plots stratified by sex
+nhanes_analytic |>
+  pivot_longer(
+    cols = c(asthma, ad, ar, fa),
+    names_to = "condition",
+    values_to = "value"
+  ) |>
+  filter(!is.na(value), !is.na(sex_f)) |>
+  ggplot(aes(
+    x = condition,
+    fill = factor(value, levels = c(1, 0), labels = c("Yes", "No"))
+  )) +
   geom_bar(position = "fill") +
-  facet_wrap(~sex) +
-  scale_y_continuous(labels = percent)  +
-  labs(
-    x = "",
-    y = "Proportion",
-    fill = "",
-    title = "Allergic conditions by sex (2015–2016)"
-  ) +
-  theme_minimal() + 
-  theme(
-    plot.title = element_text(hjust = 0.5)
-  )
-
-# Plot of allergic conditions stratified by race (unweighted)
-nhanes_i |>
-  pivot_longer(c(asthma, ad, ar, fa),
-               names_to = "condition", values_to = "value") |>
-  filter(!is.na(value), !is.na(race)) |>
-  ggplot(aes(x = condition, fill = factor(value, levels = c(1, 0), labels = c("Yes", "No")))) +
-  geom_bar(position = "fill") +
-  facet_wrap(~race) +
+  facet_wrap(~ sex_f) +
   scale_y_continuous(labels = percent) +
   labs(
     x = "",
     y = "Proportion",
     fill = "",
-    title = "Allergic conditions by race/ethnicity (2015–2016)"
+    title = "Allergic conditions by sex (NHANES 2007–2018, age 20–40)"
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5),
+    plot.title  = element_text(hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 
-# Raw vs. weighted color coding
+# Unweighted prevalence plots stratified by race
+nhanes_analytic |>
+  pivot_longer(
+    cols = c(asthma, ad, ar, fa),
+    names_to = "condition",
+    values_to = "value"
+  ) |>
+  filter(!is.na(value), !is.na(race)) |>
+  ggplot(aes(
+    x = condition,
+    fill = factor(value, levels = c(1, 0), labels = c("Yes", "No"))
+  )) +
+  geom_bar(position = "fill") +
+  facet_wrap(~ race) +
+  scale_y_continuous(labels = percent) +
+  labs(
+    x = "",
+    y = "Proportion",
+    fill = "",
+    title = "Allergic conditions by race/ethnicity (NHANES 2007–2018, age 20–40)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title  = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+# Compare unweighted vs. weighted univariable logistic regression------------------------------
+
+## Colors for raw vs. weighted in OR plots
 man_cols <- c("raw" = "#E69F00", "weighted" = "#56B4E9")
 
-# Compare unweighted vs. weighted univariable logistic regression
+## Fit unweighted glm and weighted svyglm for a given outcome and exposure
 comp <- function(outcome, exposure) {
-  is_adult_only <- outcome %in% c("ad", "ar", "fa")
-  data_sub <- if (is_adult_only) {
-    nhanes_i |> filter(age >= 20)
-  } else {
-    nhanes_i
-  }
-
-  # Subset survey design
-  design_sub <- if (is_adult_only) {
-    subset(des_mec, age >= 20)
-  } else {
-    des_mec
-  }
-
+  ## Dataset
+  data_sub   <- nhanes_analytic
+  ## Survey design
+  design_sub <- des_mec_12yr
   fmla <- as.formula(paste0(outcome, " ~ ", exposure))
-
-  # Unweighted (raw) model
+  
+  # Unweighted logistic regression
   glm_mod <- glm(fmla, data = data_sub, family = binomial()) |>
     tidy(conf.int = TRUE, exponentiate = TRUE) |>
     mutate(method = "raw")
-
-  # Weighted model
+  
+  # Weighted logistic regression
   svyglm_mod <- svyglm(fmla, design = design_sub, family = quasibinomial()) |>
     tidy(conf.int = TRUE, exponentiate = TRUE) |>
     mutate(method = "weighted")
-
+  
   bind_rows(glm_mod, svyglm_mod) |>
     filter(term != "(Intercept)") |>
-    mutate(outcome = outcome, exposure = exposure, .before = 1)
+    mutate(
+      outcome  = outcome,
+      exposure = exposure,
+      .before  = 1
+    )
 }
 
-# Outcomes and exposures
+## Outcomes and exposures to analyze
 outcomes  <- c("asthma", "ad", "ar", "fa")
 exposures <- c("bmi", "vitd_25oh")
 
-# Run univariable models for outcomes and exposures
+## Run univariable models
 results_uni <- lapply(outcomes, function(o) {
   lapply(exposures, function(x) comp(o, x)) |> bind_rows()
 }) |> bind_rows()
 
-# Plot helper function: show ORs for a given exposure across outcomes (raw vs. weighted)
+# Plot ORs for a given exposure across outcomes (raw vs weighted)------------------------------
+## Plot function
 plot_uni <- function(exposure_name) {
   results_uni |>
     filter(exposure == exposure_name) |>
     ggplot(aes(x = term, y = estimate, color = method)) +
     geom_hline(yintercept = 1, linetype = "dashed") +
-    geom_pointrange(aes(ymin = conf.low, ymax = conf.high),
-                    position = position_dodge(0.3)) +
-    facet_wrap(~outcome) +
+    geom_pointrange(
+      aes(ymin = conf.low, ymax = conf.high),
+      position = position_dodge(0.3)
+    ) +
+    facet_wrap(~ outcome) +
     scale_color_manual(values = man_cols) +
     scale_y_continuous(trans = "log10") +
     labs(
-      title = paste("Univariable odds ratios for", exposure_name, "(raw vs weighted)"),
+      title = paste("Univariable odds ratios for", exposure_name,
+                    "(raw vs. weighted)"),
       x = "",
       y = "Odds ratio (95% CI)",
       color = ""
     ) +
     theme_minimal() +
     theme(
-      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.title  = element_text(hjust = 0.5, face = "bold"),
       axis.text.x = element_text(angle = 45, hjust = 1)
     )
 }
 
-# Plots for BMI and vitamin D
+## Generate OR plots for variables of interest
 plot_uni("bmi")
 plot_uni("vitd_25oh")
+
+## ORs and CIs for all analyses
+results_uni |> 
+  select(outcome, exposure, method, estimate, conf.low, conf.high)
 ```
 
 ## Conclusion
