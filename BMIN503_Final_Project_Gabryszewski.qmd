@@ -18,7 +18,7 @@ execute:
 
 ## Overview {#sec-overview}
 
-This project used data from the nationally representative National Health and Nutrition Examination Survey (NHANES) to explore links between dietary determinants and allergic, immunologic, and cardiometabolic outcomes in U.S. adults, focusing on those between the ages of 20 and 40. Using survey-weighted univariable and multivariable regression analyses, I examined whether diet quality (primarily assessed via the Dietary Inflammatory Index) and various sociodemographic (e.g., age, sex, race/ethnicity, poverty-income ratio), behavioral (e.g., alcohol, smoking), and clinical (e.g., body mass index \[BMI\], blood pressure, hemoglobin A1c \[HbA1c\], vitamin D level) features were associated with self-reported asthma, allergic rhinitis, inflammatory arthritis, eczema, food allergy, diabetes, and hypertension. In addition, I used exploratory machine learning models to identify predictors that may contribute to risk across these diseases.
+This project used data from the nationally representative National Health and Nutrition Examination Survey (NHANES) to explore links between dietary determinants and allergic, immunologic, and cardiometabolic outcomes in U.S. adults, focusing on those between the ages of 20 and 40. Using survey-weighted univariable and multivariable regression analyses, I examined whether diet quality - primarily assessed via the Dietary Inflammatory Index - and various sociodemographic (e.g., age, sex, race/ethnicity, poverty-income ratio), behavioral (e.g., alcohol, smoking), and clinical (e.g., body mass index \[BMI\], blood pressure, hemoglobin A1c \[HbA1c\], vitamin D level) features were associated with self-reported asthma, allergic rhinitis, inflammatory arthritis, eczema, food allergy, diabetes, and hypertension. In addition, I used exploratory machine learning models to identify predictors that may contribute to risk across these diseases.
 
 I discussed this project with Dr. Robert Grundmeier (Professor of Pediatrics at CHOP and Penn, Department of Biomedical and Health Informatics) and Dr. Rich Tsui (Professor of Anesthesiology and Critical Care at CHOP and Penn, Department of Anesthesiology and Critical Care Medicine). With Dr. Grundmeier, I discussed cohort definitions, application of survey weights, and approach for regression analyses. With both Dr. Grundmeier and Dr. Tsui, I discussed the approach for machine learning analyses.
 
@@ -26,25 +26,25 @@ I discussed this project with Dr. Robert Grundmeier (Professor of Pediatrics at 
 
 ## Introduction {#sec-introduction}
 
-Over the past several decades, rates of allergic conditions – including asthma, allergic rhinitis, food allergy, and eczema - have risen substantially worldwide, driven by mechanisms that remain only partially understood \[1\]. A concurrent increase has occurred in cardiometabolic diseases, such as obesity, hypertension, and diabetes \[2\]. Allergic, immunologic, and cardiometabolic conditions share comorbidity and, together, reflect immune dysregulation that occurs due to a complex interplay among genetic susceptibility, environmental exposures, and immune-metabolic pathways. There is growing recognition that dietary factors influence immune development beginning early in life and continuing into adulthood. Diet quality, nutrient intake patterns, and anthropometric factors such as adiposity influence inflammation, epithelial barrier function, and the gut microbiome, which in turn affect disease susceptibility \[3,4\]. While a modulatory role for diet has been been implicated in select allergic (e.g., asthma) and cardiometabolic (e.g., obesity) conditions \[5,6\], knowledge gaps remain about the potential modulatory role in other allergic and immunologic diseases. This knowledge could help guide how dietary approaches might be integrated into clinical care to prevent or manage these comorbidities.
+Over the past several decades, rates of allergic conditions – including asthma, allergic rhinitis, food allergy, and eczema - have risen substantially worldwide, driven by mechanisms that remain only partially understood \[1\]. A concurrent increase has occurred in cardiometabolic diseases, such as obesity, hypertension, and diabetes \[2\]. Allergic, immunologic, and cardiometabolic conditions share comorbidity. Together, they reflect a state of immune dysregulation that occurs due to a complex interplay among genetic susceptibility, environmental exposures, and immune-metabolic pathways. There is growing recognition that dietary factors influence immune development beginning early in life and continuing into adulthood. Diet quality, nutrient intake patterns, and anthropometric factors such as adiposity influence inflammation, epithelial barrier function, and the gut microbiome, which in turn affect disease susceptibility \[3,4\]. While a modulatory role for diet has been been implicated in select allergic (e.g., asthma) and cardiometabolic (e.g., obesity) conditions \[5,6\], knowledge gaps remain about the potential modulatory role in other allergic and autoimmune diseases. This knowledge could help guide how dietary approaches might be integrated into clinical care to prevent or manage these chronic conditions.
 
-NHANES is a continuous, nationally representative survey that integrates interviews, physical examinations, and laboratory assessments to characterize the health and nutritional status of the U.S. population. It provides detailed information on demographics, health behaviors, dietary recalls, biomarkers, anthropometrics, and clinical outcomes, making it well suited for population-level nutrition research \[7\]. The Dietary Inflammatory Index (DII) is an established, literature-derived score that quantifies the inflammatory potential of an individual’s diet based on intake of nutrients and food components known to influence systemic inflammation. To compute standardized DII values in NHANES, this study used the dietaryindexNDP package, which links NHANES dietary recall data with nutrient composition from the U.S. Department of Agriculture’s Food and Nutrient Database for Dietary Studies (FNDDS) and food group equivalents from the Food Patterns Equivalents Database (FPED) \[8,9\]. Leveraging these tools, I examined associations between dietary, sociodemographic, and clinical factors and a set of allergic-immunologic outcomes (asthma, allergic rhinitis, inflammatory arthritis, eczema, and food allergy) as well as cardiometabolic outcomes (diabetes and hypertension), focusing on adults aged 20-40 years. This age group represents a population that may be particularly amenable to dietary interventions aimed at disease prevention or management. In this study, I applied survey-weighted logistic regression along with exploratory machine learning models to assess whether dietary factors and related covariates are associated with risk across these various conditions that are broadly characterized by immune dysregulation.
+NHANES is a continuous, nationally representative survey that integrates interviews, physical examinations, and laboratory assessments to characterize the health and nutritional status of the U.S. population. It provides detailed information on demographics, health behaviors, dietary recalls, biomarkers, anthropometrics, and clinical outcomes, making it well suited for population-level nutrition research \[7\]. The Dietary Inflammatory Index (DII) is an established, literature-derived score that quantifies the inflammatory potential of an individual’s diet based on intake of nutrients and food components known to influence systemic inflammation. To compute standardized DII values in NHANES, this study used the dietaryindexNDP package, which links NHANES dietary recall data with nutrient composition information from the U.S. Department of Agriculture’s Food and Nutrient Database for Dietary Studies (FNDDS) and food group equivalents from the Food Patterns Equivalents Database (FPED) \[8,9\]. Leveraging these tools, I examined associations between dietary, sociodemographic, and clinical factors and a set of allergic-immunologic outcomes (asthma, allergic rhinitis, inflammatory arthritis, eczema, and food allergy) as well as cardiometabolic outcomes (diabetes and hypertension). I specifically focused on adults aged 20-40 years, a sub-population that may be particularly amenable to dietary interventions aimed at disease prevention or management. In this study, I applied survey-weighted logistic regression along with exploratory machine learning models to assess whether dietary factors and related covariates are associated with risk across these various immune dysregulatory conditions.
 
-This work is inherently multidisciplinary, bridging allergy–immunology, nutrition, epidemiology, and biomedical informatics. Informatics approaches were essential to this project, from extracting and integrating NHANES data to applying the survey design structure and implementing the regression and machine learning analyses. The integration of my training in allergy-immunology, clinical nutrition, epidemiology, statistics, and informatics uniquely equipped me to complete this project and interpret its findings from a cross-disciplinary perspective. This project was supported by mentorship from Drs. Robert Grundmeier and Rich Tsui, whose guidance was instrumental in developing cohort definitions, applying survey-weighted design, and shaping the analytic approach for both the regression and machine learning analyses.
+This work is inherently multidisciplinary, bridging allergy–immunology, nutrition, epidemiology, and biomedical informatics. Informatics approaches were essential to this project, from extracting and integrating NHANES data to applying the survey design structure and implementing the regression and machine learning analyses. The integration of my prior training in allergy-immunology, clinical nutrition, epidemiology, and statistics with my current training in informatics uniquely equipped me to complete this project and interpret its findings with a cross-disciplinary lens. This project was supported by mentorship from Drs. Robert Grundmeier and Rich Tsui, whose guidance was instrumental in developing cohort definitions, applying survey-weighted design, and shaping the analytic approach for both the regression and machine learning analyses.
 
 ## Methods {#sec-methods}
 
 **Data source, cohort extraction, and data harmonization**
 
-Using NHANES, I performed a cross-sectional analysis focused on non-pregnant adults ages 20-40 years from 2005 to 2012. This age and time range were selected to target a younger adult population that may be more amenable to dietary interventions for prevention or management of chronic diseases, to avoid the increasing medical complexity associated with older age, and to mitigate missingness of key variables that were either relatively more missing or entirely absent in other NHANES cycles. I pooled four continuous two-year NHANES cycles (2005-2006, 2007-2008, 2009-2010, and 2011-2012). For the main analyses (asthma, allergic rhinitis, inflammatory arthritis, diabetes, hypertension), data from the full pooled period (2005–-2012) were used. Because eczema and food allergy were only measured in select cycles, I additionally constructed time-restricted subcohorts for eczema (2005-2006) and food allergy (2007-2010).
+Using NHANES, I performed a cross-sectional analysis focused on non-pregnant adults ages 20-40 years from 2005 to 2012. This age and time range were selected to target a younger adult population that may be more amenable to dietary interventions for prevention or management of chronic diseases. Additional reasons for this sub-population choice included (1) avoidance of incorporating the increasing medical complexity associated with older age, and (2) partial mitigation of missingness of key variables that were less available for other age groups across NHANES cycles. I pooled four continuous two-year NHANES cycles (2005-2006, 2007-2008, 2009-2010, and 2011-2012). For the main analyses (asthma, allergic rhinitis, inflammatory arthritis, diabetes, hypertension), data from the full pooled period (2005–2012) were used. Because eczema and food allergy were only measured in select cycles, I additionally constructed time-restricted subcohorts for eczema (2005-2006) and food allergy (2007-2010).
 
-Covariates included sociodemographic variables (e.g., age, sex, race/ethnicity), clinical characteristics (e.g., BMI, waist-to-height ratio, vitamin D \[25(OH)D\] level), and self-reported allergic-immunologic conditions (asthma, allergic rhinitis, inflammatory arthritis \[i.e., rheumatoid or psoriatic arthritis\], eczema, food allergy) and cardiometabolic diseases (diabetes, hypertension). Two-year survey weights were rescaled to generate weights for analysis of pooled NHANES cycles. Data from multiple NHANES modules were merged into an analytic dataset, and variables were harmonized by recoding them into consistent categories across cycles. Using the dietaryindexNDP package, the Dietary Inflammatory Index (DII) was computed based on 24-hour dietary recall data and was represented as both as a continuous score (with and without alcohol included) and as quartiles (Q1–Q4), ranging from most anti-inflammatory to most pro-inflammatory, as previously described \[10\]. To reduce the influence of extreme values and to create clinically meaningful comparison groups, select variables (e.g., BMI, vitamin D levels) were converted into quartiles before modeling. I performed data manipulation with the tidyverse package collection, formatted outputs with broom and scales packages, generated figures using the ggplot2 package, and generated tables using the gt package.
+Covariates included sociodemographic variables (e.g., age, sex, race/ethnicity), clinical characteristics (e.g., BMI, waist-to-height ratio, vitamin D \[25(OH)D\] level), and self-reported allergic-immunologic conditions (asthma, allergic rhinitis, inflammatory arthritis \[i.e., rheumatoid or psoriatic arthritis\], eczema, food allergy) and cardiometabolic diseases (diabetes, hypertension). Two-year survey weights were rescaled to generate weights for analysis of pooled NHANES cycles. Data from multiple NHANES modules were merged into a single dataset, and variables were harmonized by recoding them into consistent categories across cycles. Using the dietaryindexNDP package, the Dietary Inflammatory Index (DII) was computed based on 24-hour dietary recall data and was represented as both as a continuous score (with and without alcohol intake included) and as quartiles (Q1–Q4), corresponding to most anti-inflammatory to most pro-inflammatory, as previously described \[10\]. To reduce the influence of extreme values and to create clinically meaningful comparison groups, select variables (e.g., BMI, vitamin D levels) were converted into quartiles prior to incorporation into models. I performed data manipulation with the tidyverse set of packages, formatted outputs with broom and scales packages, generated figures using the ggplot2 package, and generated tables using the gt package.
 
-All extracted variables, their types (i.e., continuous, categorical, binary), distributions, and missingness are summarized in **Table 1**. In general, for sociodemographic and behavioral variables, missingness was low, with most variables (e.g., age, sex, education, insurance, smoking, physical activity, family history) showing a missingness of less than 2%, while other variables (e.g. race/ethnicity, alcohol use, poverty-income ratio, food security) showed a range of missingness between 7% and 20%. For cardiometabolic and nutrient labs, the missingness rate was about 8% to 10%. The rate of missingness for primary clinical outcomes was quite low (less than 1%). For food allergy and eczema, the missingness (calculated relative to the full cohort) was expected given the unavailability of these clinical outcomes in many survey cycles. Hence time-restricted comparator cohorts were used for secondary analyses for these specific clinical outcomes. Subsequent regression and machine learning analyses used complete-case data.
+All extracted variables, their types (i.e., continuous, categorical, binary), distributions, and missingness are summarized in **Table 1**. In general, for sociodemographic and behavioral variables, missingness was low, with most variables (e.g., age, sex, education, insurance, smoking, physical activity, family history) exhibiting a missingness rate of less than 2%, while other variables (e.g. race/ethnicity, alcohol use, poverty-income ratio, food security) showed a range of missingness rates between 7% and 20%. For cardiometabolic and nutrient labs, the missingness rate was 8%-10%. The rate of missingness for primary clinical outcomes was low (less than 1%). For food allergy and eczema, the missingness (calculated relative to the full cohort) was expected given the unavailability of these clinical outcomes in many survey cycles. Hence, time-restricted comparator cohorts were used for secondary analyses for these specific clinical outcomes. Subsequent regression and machine learning analyses used complete-case data.
 
 **Weighted prevalence analysis**
 
-Using the survey package, the survey-weighted prevalence of all allergic, immunologic, and cardiometabolic conditions was determined. In addition, to assess how prevalence varied by dietary inflammatory status, survey-weighted prevalence was determined within DII quartiles (Q1-Q4).
+Using the survey package, the survey-weighted prevalence of all allergic, immunologic, and cardiometabolic conditions was determined. In addition, to assess how prevalence varied by dietary inflammatory status, survey-weighted prevalence was determined within DII quartiles (Q1-Q4). Statistical significance was determined in survey-weighted logistic regression models of each outcome on DII quartile, comparing Q2-Q4 with Q1 using Wald tests.
 
 **Univariable and multivariable regression analyses**
 
@@ -54,13 +54,13 @@ Next, survey-weighted multivariable regression analyses were performed to evalua
 
 **Effect modification analyses**
 
-I assessed whether the association between continuous DII and each disease outcome differed by sex, BMI category, or vitamin D category using survey-weighted logistic regression models that included all Model 3 covariates. Sex contributed one interaction term (DII x sex), whereas the multi-category BMI and vitamin D variables contributed multiple interaction terms with DII. I determined stratum-specific ORs and 95% CIs for DII within each modifier level. Statistical significance of effect modification was evaluated using Wald chi-square tests combining all interaction coefficients for each modifier.
+I assessed whether the association between continuous DII and each disease outcome differed by sex, BMI category, or vitamin D category using survey-weighted logistic regression models that included all Model 3 covariates from the multivariable regression analyses. Sex contributed one interaction term (DII x sex), whereas the multi-category BMI and vitamin D variables contributed multiple interaction terms with DII. I determined stratum-specific ORs and 95% CIs for DII within each modifier level. Statistical significance of effect modification was evaluated using Wald tests combining all interaction coefficients for each modifier.
 
 **Machine learning analyses**
 
-I developed exploratory machine learning models to predict disease outcomes (asthma, allergic rhinitis, inflammatory arthritis, hypertension, diabetes, eczema, and food allergy) using the tidymodels set of packages for preprocessing, data sampling, model tuning, and performance evaluation. Two predictor sets were examined. Set 1 included core sociodemographic, behavioral, anthropometric, and clinical variables as well as continuous DII scores (23 variables in total). Set 2 included individual nutrient predictors (26 variables in total). Four algorithms were trained for each outcome, namely logistic regression (LR), LASSO-penalized logistic regression (glmnet package), Random Forest (RF; randomForest package), and XGBoost (XGB; xgboost package). Logistic regression was chosen as an interpretable baseline model, LASSO was chosen for its ability to shrink coefficients and perform variable selection, and RF and XGB were included to capture complex non-linear relationships.
+I developed exploratory machine learning models to predict disease outcomes (asthma, allergic rhinitis, inflammatory arthritis, hypertension, diabetes, eczema, and food allergy) using the tidymodels set of packages for preprocessing, data sampling, model tuning, and performance evaluation. Two predictor sets were examined. Set 1 included core sociodemographic, behavioral, anthropometric, and clinical variables as well as continuous DII scores (23 variables). Set 2 included individual nutrient predictors (26 variables). Four algorithms were trained for each outcome, namely logistic regression (LR), LASSO-penalized logistic regression (glmnet package), Random Forest (RF; randomForest package), and XGBoost (XGB; xgboost package). Logistic regression was chosen as a baseline comparator model, LASSO was chosen for its ability to shrink coefficients and perform variable selection, and RF and XGB were chosen due to their ability to capture complex non-linear relationships.
 
-For each outcome and predictor set, data were split into a training set (80%) and a test set (20%). Within the training set, 10-fold cross-validation was used for preprocessing and hyperparameter tuning. Preprocessing steps were implemented using tidymodels recipes. Hyperparameters for LASSO (penalty), RF (mtry), and XGB (number of trees, tree depth, learning rate) were tuned using the cross-validated area under the receiver operating characteristic curve (AUROC). Model performance on the test set was quantified using AUROC. To identify the topmost predictors, I computed model-specific variable importance scores using the vip package. For LR models, variable importance referred to the absolute value of standardized regression coefficients. For LASSO models, variable importance was based on the absolute value of the penalized coefficients after shrinkage. For RF models, variable importance was derived from tree-based split metrics (i.e., increase in node purity associated with each variable). Finally, for XGB, variable importance reflected the gain, i.e., how much each predictor improved the model’s accuracy when used in the boosted trees.
+For each outcome and predictor set, data were split into a training set (80%) and a test set (20%). Within the training set, 10-fold cross-validation was used for preprocessing and hyperparameter tuning. Preprocessing steps were implemented using tidymodels recipes. Hyperparameters for LASSO (penalty), RF (mtry), and XGB (number of trees, tree depth, learning rate) were tuned using the cross-validated area under the receiver operating characteristic curve (AUROC). Model performance on the test set was quantified using AUROC. To identify the topmost predictors, I computed model-specific variable importance scores using the vip package. For LR models, variable importance referred to the absolute value of standardized regression coefficients. For LASSO models, variable importance was based on the absolute value of the penalized coefficients after shrinkage. For RF models, variable importance was derived from tree-based split metrics (i.e., increase in node purity associated with each variable). Finally, for XGB, variable importance reflected the gain (i.e., how much each predictor improved the model’s accuracy when used in boosted trees).
 
 **Code to install and load packages**
 
@@ -117,7 +117,7 @@ knitr::opts_chunk$set(
 
 **Code to generate master analytic dataset and summarize variable types, distributions, and missingness**
 
-The code below was used to generate the master analytic dataset for subsequent regression and machine learning analyses. Briefly, custom helper functions were used with the nhanesA package to streamline downloading NHANES modules of interest (i.e., demographics, psychosocial variables, medical conditions, anthropometrics, laboratory results, dietary variables, etc.) across four survey cycles (2005–2012). These were helpful as I explored various iterations of surveys cycles and variables to optimize the cohort parameters that I ultimately selected for this project. The set of tidyverse packages was use to clean and merge these data. I then used the dietaryindexNDP package to compute Dietary Inflammatory Index (DII) scores (with and without alcohol) and individual nutrient components. All cleaned modules were joined by participant ID into a single dataset. In this dataset, I harmonized disease outcomes (i.e., asthma, allergic rhinitis, inflammatory arthritis, eczema, food allergy, diabetes, hypertension) and converted selected variables (e.g., BMI, vitamin D level) into clinically meaningful categories. The cohort was restricted to non-pregnant adults 20-40 years of age, and NHANES sampling weights were rescaled to account for pooling of survey cycles. Using the survey package, I then generated outcome-specific analytic subsets with corresponding MEC-weighted survey designs for subsequent regression analyses. Finally, I created a data dictionary-style table (**Table 1**) summarizing all variables, their types, sample sizes, value ranges, categorical levels, and missingness. Additional coding details are included as annotations within the code chunk below.
+The code below was used to generate the master analytic dataset for subsequent regression and machine learning analyses. Briefly, custom helper functions were used with the nhanesA package to streamline downloading NHANES modules of interest (i.e., demographics, psychosocial variables, medical conditions, anthropometrics, laboratory results, dietary variables, etc.) across four survey cycles (2005–2012). These were useful for exploring survey-cycle and variable combinations while optimizing the cohort parameters for the final cohort selection. The set of tidyverse packages was used to clean and merge data. I then used the dietaryindexNDP package to compute Dietary Inflammatory Index (DII) scores (with and without alcohol) and individual nutrient components. All cleaned modules were joined by the participant ID into a single dataset. I then harmonized disease outcomes (i.e., asthma, allergic rhinitis, inflammatory arthritis, eczema, food allergy, diabetes, hypertension) and converted selected variables (e.g., BMI, vitamin D level) into clinically relevant categories. The cohort was restricted to non-pregnant adults 20-40 years of age, and NHANES sampling weights were rescaled to account for pooling of survey cycles. Using the survey package, I generated outcome-specific analytic subsets with corresponding mobile examination center (MEC)-weighted survey designs for subsequent regression analyses. A data dictionary table (**Table 1**) summarizes all variables, their types, sample sizes, value ranges, categorical levels, and missingness. Additional coding details are included as annotations within the code chunk below.
 
 ```{r}
 # Helper functions-----------------------------------------------------------------------------
@@ -217,7 +217,7 @@ to01 <- function(x) {
   )
 }
 
-## Helper function to convert survey cycle variable survey cycle labels
+## Helper function to convert survey cycle numbers to cycle labels
 cycle_label <- function(s) {
   years <- str_extract(as.character(s), "\\d{4}-\\d{4}")
   
@@ -262,7 +262,7 @@ check_var_availability <- function(data, vars = NULL) {
     arrange(variable, cycle)
 }
 
-## Restrict analysis NHANES cycles spanning 2005–2012 (i.e., D–G)
+## Restrict analysis NHANES cycles between 2005 and 2012 (i.e., D–G)
 cycles <- c("D", "E", "F", "G")
 
 
@@ -296,36 +296,36 @@ mcq_keep <- c(
 )
 mcq <- load_nhanes_module("MCQ", keep_vars = mcq_keep)
 
-## Load eczema and allergic rhinitis data for 2005–2006 (AGQ module)
+## Load eczema and allergic rhinitis data within AGQ module for 2005–2006
 agq_d <- load_nhanes_module(
   "AGQ",
   cycles_vec = "D",
   keep_vars = c("SEQN","AGQ010","AGQ180")
 )
 
-## Load allergic rhinitis data for 2007–2012 (RDQ module)
+## Load allergic rhinitis data within RDQ module for 2007–2012
 rdq <- load_nhanes_module(
   "RDQ",
   cycles_vec = c("E","F","G"),
   keep_vars = c("SEQN","AGQ030")
 )
 
-## Load food allergy data (DBQ920) for 2007–2010
+## Load food allergy data within DBQ module for 2007–2010
 dbq <- load_nhanes_module("DBQ", keep_vars = c("SEQN","DBQ920"))
 
-## Load diabetes status (DIQ010)
+## Load diabetes status within DIQ module
 diq <- load_nhanes_module("DIQ", keep_vars = c("SEQN","DIQ010"))
 
-## Load self-reported hypertension (BPQ020)
+## Load hypertension within BPQ module
 bpq <- load_nhanes_module("BPQ", keep_vars = c("SEQN","BPQ020"))
 
-## Load anthropometrics (BMI, waist, height, weight)
+## Load anthropometrics within BMX module
 bmx <- load_nhanes_module(
   "BMX",
   keep_vars = c("SEQN","BMXBMI","BMXWAIST","BMXHT","BMXWT")
 )
 
-## Load individual systolic and diastolic blood pressure readings
+## Load systolic and diastolic blood pressure readings within BPX module
 bp <- load_nhanes_module(
   "BPX",
   keep_vars = c(
@@ -335,40 +335,40 @@ bp <- load_nhanes_module(
   )
 )
 
-## Load serum vitamin D [25(OH)D] measurements
+## Load serum vitamin D [25(OH)D] measurements within VID module
 vid <- load_nhanes_module(
   "VID",
   keep_vars = c("SEQN", "LBXVIDMS", "LBXVIDLC", "LBDVIDMS")
 )
 
-## Load lifetime and current smoking status
+## Load lifetime and current smoking status within SMQ module
 smq <- load_nhanes_module("SMQ", keep_vars = c("SEQN","SMQ020","SMQ040"))
 
-## Load health insurance coverage
+## Load health insurance coverage within HIQ module
 hiq <- load_nhanes_module("HIQ", keep_vars = c("SEQN","HIQ011"))
 
-## Load household food security
+## Load household food security within FSQ module
 fsq <- load_nhanes_module("FSQ", keep_vars = c("SEQN","FSDHH"))
 
-## Load alcohol consumption (ever drinker status, ALQ101)
+## Load alcohol consumption within ALQ module
 alq <- load_nhanes_module("ALQ", keep_vars = c("SEQN","ALQ101","ALQ130"))
 
-## Load HbA1c
+## Load HbA1c within GHB module
 hba1c <- load_nhanes_module("GHB", keep_vars = c("SEQN","LBXGH"))
 
 ## Load total and HDL cholesterol
 tchol <- load_nhanes_module("TCHOL", keep_vars = c("SEQN","LBXTC"))
 hdl   <- load_nhanes_module("HDL",   keep_vars = c("SEQN","LBDHDD"))
 
-## Load physical activity variables
+## Load physical activity variables within PAQ module
 paq_keep <- c("SEQN","PAQ650","PAQ665","PAD200","PAD320")
 paq <- load_nhanes_module("PAQ", keep_vars = paq_keep)
 
 # Dietary Inflammatory Index (DII)-------------------------------------------------------------
-## Define NHANES cycles for which DII is available (2005–2012)
+## Define NHANES cycles (2005–2012)
 dii_cycles <- c("0506", "0708", "0910", "1112")
 
-## Obtain DII results for a single NHANES cycle (day 1 only)
+## Obtain 24-hour DII results for NHANES cycle
 get_dii_cycle <- function(cyc) {
   message("Obtain DII for NHANES cycle ", cyc, " (Day 1)...")
   
@@ -379,16 +379,16 @@ get_dii_cycle <- function(cyc) {
     mutate(cycle_code_ndp = cyc)
 }
 
-## Obtain and pool DII data across all relevant cycles
+## Obtain and pool DII data across cycles
 dii_all <- dii_cycles |>
   map_dfr(get_dii_cycle)
 
-## Retain DII total scores (with and without alcohol) and nutrient components
+## Keep DII total scores (with and without alcohol) and nutrient components
 dii_clean <- dii_all |>
   transmute(
     seqn         = SEQN,
-    dii_etoh_raw = DII_ALL,      # DII including alcohol
-    dii_raw      = DII_NOETOH,   # DII excluding alcohol
+    dii_etoh_raw = DII_ALL,      
+    dii_raw      = DII_NOETOH,   
     kcal         = KCAL,
     carb         = CARB,
     protein      = PROTEIN,
@@ -417,11 +417,11 @@ dii_clean <- dii_all |>
     caffeine     = CAFFEINE
   ) |>
   mutate(
-    dii      = dii_raw,      # DII without alcohol (main exposure)
-    dii_etoh = dii_etoh_raw  # DII including alcohol (secondary)
+    dii      = dii_raw,      
+    dii_etoh = dii_etoh_raw
   )
 
-## Define full set of DII component nutrient variables for quartile derivation
+## Define full set of DII component nutrient variables
 dii_component_vars <- c(
   "kcal", "carb", "protein", "totalfat", "satfat",
   "pufa", "mufa", "n3fat", "n6fat", "choles",
@@ -432,9 +432,7 @@ dii_component_vars <- c(
   "fiber", "caffeine"
 )
 
-
 # Data cleaning and harmonization -------------------------------------------------------------
-
 ## Harmonize physical activity variables across NHANES cycles
 paq_clean <- paq |>
   transmute(
@@ -445,7 +443,7 @@ paq_clean <- paq |>
     pad320 = PAD320    # Moderate activity ≥10 minutes over past 30 days (2005–06)
   )
 
-## Clean demographic and design variables and derive a numeric cycle code
+## Clean demographic and design variables and derive numeric cycle code
 demo_clean <- demo |>
   mutate(
     sddsrvyr_label = as.character(SDDSRVYR),
@@ -458,7 +456,7 @@ demo_clean <- demo |>
     )
   ) |>
   transmute(
-    seqn      = SEQN,
+    seqn      = SEQN,                   # Participant ID
     age       = as.numeric(RIDAGEYR),   # Age (years)
     sex_raw   = RIAGENDR,               # Sex
     race_raw  = RIDRETH1,               # Race/ethnicity (1–5)
@@ -473,10 +471,10 @@ demo_clean <- demo |>
     preg      = RIDEXPRG                # Pregnancy status
   )
 
-## Clean the medical conditions module and derive 0/1 indicators for asthma, family history of asthma, and arthritis
+## Clean medical conditions and derive indicators for asthma, family history of asthma, and arthritis
 mcq_clean <- mcq |>
   transmute(
-    seqn           = SEQN,
+    seqn           = SEQN,      # Participant ID
     asthma_raw     = MCQ010,    # Asthma
     fh_asthma_raw  = MCQ300B,   # Family history asthma
     arthritis_raw  = MCQ160A,   # Ever arthritis
@@ -490,14 +488,14 @@ mcq_clean <- mcq |>
     arthritis_ever = to01(arthritis_raw)
   )
 
-## Derive eczema status restricted to the 2005–2006 cycle
+## Derive eczema status in 2005–2006 cycle
 eczema_clean <- demo_clean |>
   select(seqn, sddsrvyr) |>
   left_join(
     agq_d |>
       transmute(
         seqn       = SEQN,
-        agq180_ecz = to01(AGQ180)  # Eczema code
+        agq180_ecz = to01(AGQ180) # Eczema code
       ),
     by = "seqn"
   ) |>
@@ -506,14 +504,14 @@ eczema_clean <- demo_clean |>
   ) |>
   select(seqn, ad)
 
-## Derive food allergy status restricted to the 2007–2010 cycles
+## Derive food allergy status in 2007–2010 cycles
 fa_clean <- demo_clean |>
   select(seqn, sddsrvyr) |>
   left_join(
     dbq |>
       transmute(
         seqn      = SEQN,
-        dbq920_fa = to01(DBQ920)   # Food allergy code
+        dbq920_fa = to01(DBQ920) # Food allergy code
       ),
     by = "seqn"
   ) |>
@@ -544,7 +542,7 @@ ar_clean <- demo_clean |>
   ) |>
   select(seqn, ar)
 
-## Derive a 0/1 diabetes indicator from DIQ010
+## Derive diabetes indicator from DIQ010
 diq_clean <- diq |>
   transmute(
     seqn = SEQN,
@@ -559,7 +557,7 @@ diq_clean <- diq |>
   ) |>
   select(seqn, dm2)
 
-## Derive 0/1 hypertension indicator from BPQ020
+## Derive hypertension indicator from BPQ020
 bpq_clean <- bpq |>
   transmute(
     seqn    = SEQN,
@@ -597,7 +595,7 @@ bp_clean <- bp |>
     dbp_mean = if_else(is.nan(dbp_mean), NA_real_, dbp_mean)
   )
 
-## Harmonize vitamin D [25(OH)D] across laboratory methods, taking first non-missing value
+## Harmonize vitamin D [25(OH)D] across laboratory methods (take first non-missing value)
 vid_clean <- vid |>
   mutate(
     vitD25oh = coalesce(LBXVIDMS, LBXVIDLC, LBDVIDMS)
@@ -627,10 +625,10 @@ smq_clean <- smq |>
 hiq_clean <- hiq |>
   transmute(
     seqn    = SEQN,
-    insured = to01(HIQ011)  # 1 = insured, 0 = uninsured
+    insured = to01(HIQ011)
   )
 
-## Classify household food security into four ordered categories
+## Classify household food security into categories
 fsq_clean <- fsq |>
   transmute(
     seqn = SEQN,
@@ -644,7 +642,7 @@ fsq_clean <- fsq |>
     )
   )
 
-## Alcohol indicator based on ever having more than 12 drinks in any one year (ALQ101)
+## Derive alcohol indicator from ALQ101
 alq_clean <- alq |>
   transmute(
     seqn        = SEQN,
@@ -655,21 +653,20 @@ alq_clean <- alq |>
     )
   )
 
-## Retain HbA1c
+## Keep HbA1c
 hba1c_clean <- hba1c |>
   transmute(
     seqn  = SEQN,
     hba1c = LBXGH
   )
 
-## Retain total and HDL cholesterol
+## Keep total and HDL cholesterol
 tchol_clean <- tchol |> transmute(seqn = SEQN, tchol = LBXTC)
 hdl_clean   <- hdl   |> transmute(seqn = SEQN, hdl   = LBDHDD)
 
 
 # Merge modules and define analytic cohort ----------------------------------------------------
-
-## Merge all cleaned modules to construct a unified NHANES dataset
+## Merge all cleaned modules to construct single NHANES analytic dataset
 nhanes_all <- demo_clean |>
   left_join(mcq_clean,    by = "seqn") |>
   left_join(eczema_clean, by = "seqn") |>
@@ -690,25 +687,25 @@ nhanes_all <- demo_clean |>
   left_join(bpq_clean,    by = "seqn") |>
   left_join(paq_clean,    by = "seqn")
 
-## Restrict the analytic cohort and derive all final variables used in regression and machine learning analyses
+## Restrict analytic cohort and derive all final variables used in regression and machine learning analyses
 nhanes_analytic <- nhanes_all |>
-  # Restrict to adults 20–40 years old, 2005–2012
+  ### Restrict to adults 20–40 years old, 2005–2012
   filter(
     !is.na(sddsrvyr),
     sddsrvyr %in% 4:7,
     age >= 20, age <= 40
   ) |>
-  # Exclude pregnant participants at the exam
+  ### Exclude pregnant subjects
   filter(
     is.na(preg) |
       !preg %in% c("Yes, positive lab pregnancy test or self-reported pregnant at exam")
   ) |>
   mutate(
-    # Multi-cycle weights (pooled 8-year weights over 4 cycles)
+    ### Multi-cycle weights (pooled 8-year weights over 4 cycles)
     wtint8yr = wtint2yr / length(cycles),
     wtmec8yr = wtmec2yr / length(cycles),
     
-    # Sex factor
+    ### Sex factor
     sex = case_when(
       sex_raw %in% c(1, "1") ~ "Male",
       sex_raw %in% c(2, "2") ~ "Female",
@@ -718,7 +715,7 @@ nhanes_analytic <- nhanes_all |>
     ),
     sex = factor(sex, levels = c("Male", "Female")),
     
-    # Race/ethnicity factor (RIDRETH1 1–5)
+    ### Race/ethnicity factor
     race = case_when(
       race_raw %in% c(3, "3", "Non-Hispanic White")  ~ "Non-Hispanic White",
       race_raw %in% c(4, "4", "Non-Hispanic Black")  ~ "Non-Hispanic Black",
@@ -738,7 +735,7 @@ nhanes_analytic <- nhanes_all |>
       )
     ),
     
-    # Education factor (collapsed)
+    ### Education factor
     educ_factor_raw = factor(educ_raw),
     educ = case_when(
       educ_factor_raw %in% c(
@@ -767,13 +764,13 @@ nhanes_analytic <- nhanes_all |>
       levels  = c("<9 years","9–12 years",">12 years")
     ),
     
-    # Smoking factor
+    ### Smoking factor
     smoking = factor(
       smoking,
       levels = c("Never", "Former", "Current")
     ),
     
-    # Physical activity factor (Sedentary, Moderate, Intense), harmonized across cycles
+    ### Physical activity factor
     phys_act = case_when(
       # 2005–2006 (sddsrvyr == 4): PAD200 / PAD320
       sddsrvyr == 4 & to01(pad200) == 1 ~ "Intense",
@@ -794,14 +791,14 @@ nhanes_analytic <- nhanes_all |>
       levels = c("Sedentary","Moderate","Intense")
     ),
     
-    # Food security factor
+    ### Food security factor
     food_sec = factor(
       food_security,
       levels = c("Full","Marginal","Low","Very low"),
       ordered = TRUE
     ),
     
-    # Insurance factor
+    ### Insurance factor
     insur = factor(
       case_when(
         insured == 1 ~ "Yes",
@@ -811,7 +808,7 @@ nhanes_analytic <- nhanes_all |>
       levels = c("No", "Yes")
     ),
     
-    # Alcohol factor (no/yes) based on any_alcohol from ALQ101
+    ### Alcohol factor
     alcohol = factor(
       case_when(
         any_alcohol == 0 ~ "No",
@@ -821,34 +818,34 @@ nhanes_analytic <- nhanes_all |>
       levels = c("No", "Yes")
     ),
     
-    # Validity flags for outcomes with restricted survey windows
-    ad_valid = sddsrvyr == 4,          # Eczema only in 2005–06
-    fa_valid = sddsrvyr %in% c(5, 6),  # Food allergy only in 2007–10
+    ### Validity flags for outcomes with restricted survey windows
+    ad_valid = sddsrvyr == 4,          # Eczema (2005–06)
+    fa_valid = sddsrvyr %in% c(5, 6),  # Food allergy (2007–10)
     
-    # Inflammatory arthritis based on multiple arthritis type questions
+    ### Inflammatory arthritis based on multiple arthritis questions
     inflam_arthritis = {
       mcq190_chr <- as.character(mcq190)
       mcq191_chr <- as.character(mcq191)
       mcq195_chr <- as.character(mcq195)
       
       case_when(
-        # Denial of ever having arthritis
+        #### Denial of ever having arthritis
         arthritis_ever == 0 ~ 0,
         
-        # 2005–2006 and 2007–2008: MCQ190 arthritis type
+        #### 2005–2006 and 2007–2008: MCQ190 arthritis type
         arthritis_ever == 1 & sddsrvyr %in% c(4, 5) &
           grepl("Rhe", mcq190_chr, ignore.case = TRUE) ~ 1,
         arthritis_ever == 1 & sddsrvyr %in% c(4, 5) &
           grepl("Ost|Osteo|Oth", mcq190_chr, ignore.case = TRUE) ~ 0,
         
-        # 2009–2010: MCQ191 arthritis type 
+        #### 2009–2010: MCQ191 arthritis type 
         arthritis_ever == 1 & sddsrvyr == 6 &
           (grepl("Rhe", mcq191_chr, ignore.case = TRUE) |
              grepl("Pso", mcq191_chr, ignore.case = TRUE)) ~ 1,
         arthritis_ever == 1 & sddsrvyr == 6 &
           grepl("Ost|Osteo|Oth", mcq191_chr, ignore.case = TRUE) ~ 0,
         
-        # 2011–2012: MCQ195 arthritis type
+        #### 2011–2012: MCQ195 arthritis type
         arthritis_ever == 1 & sddsrvyr == 7 &
           (grepl("Rhe", mcq195_chr, ignore.case = TRUE) |
              grepl("Pso", mcq195_chr, ignore.case = TRUE)) ~ 1,
@@ -859,19 +856,19 @@ nhanes_analytic <- nhanes_all |>
       )
     },
     
-    # Final inflammatory arthritis, diabetes, and hypertension indicators (0/1)
+    ### Final inflammatory arthritis, diabetes, and hypertension indicators
     arthritis = inflam_arthritis,
     diabetes  = dm2,
     htn       = htn,
   
-    # Family history of asthma (0/1)
+    ### Family history of asthma
     fh_asthma = fh_asthma,
     
-    # Anthropometric ratio and non-HDL cholesterol
-    whtr    = waist_cm / height_cm,                            # Waist-to-height ratio
-    non_hdl = if_else(!is.na(tchol) & !is.na(hdl), tchol - hdl, NA_real_),  # Non-HDL
+    ### Anthropometric ratio and non-HDL cholesterol
+    whtr    = waist_cm / height_cm,                           
+    non_hdl = if_else(!is.na(tchol) & !is.na(hdl), tchol - hdl, NA_real_),  
     
-    # Vitamin D categories
+    ### Vitamin D categories
     vitD25oh_cat = case_when(
       is.na(vitD25oh)                  ~ NA_character_,
       vitD25oh < 20                    ~ "<20 (deficient)",
@@ -886,7 +883,7 @@ nhanes_analytic <- nhanes_all |>
       ordered = TRUE
     ),
     
-    # DII quartiles (from most anti-inflammatory to most pro-inflammatory)
+    ### DII quartiles
     dii_quart = ntile(dii, 4),
     dii_quart = factor(
       dii_quart,
@@ -900,7 +897,7 @@ nhanes_analytic <- nhanes_all |>
       ordered = TRUE
     ),
     
-    # Pregnancy status (derived categorical indicator)
+    ### Pregnancy status
     preg_flag = case_when(
       preg == "Yes, positive lab pregnancy test or self-reported pregnant at exam" ~ 1,
       preg %in% c("SP not pregnant at exam",
@@ -918,7 +915,7 @@ nhanes_analytic <- nhanes_all |>
       levels = c("Not pregnant", "Pregnant")
     ),
     
-    # Quartiles for DII component nutrients (keep only quartile factors downstream)
+    ### Quartiles for DII component nutrients
     across(
       all_of(dii_component_vars),
       ~ ntile(., 4),
@@ -934,7 +931,7 @@ nhanes_analytic <- nhanes_all |>
       )
     ),
     
-    # BMI categories
+    ### BMI categories
     bmi_cat = case_when(
       is.na(bmi)       ~ NA_character_,
       bmi < 18.5       ~ "Underweight (<18.5)",
@@ -957,7 +954,7 @@ nhanes_analytic <- nhanes_all |>
       ordered = TRUE
     ),
     
-    # Waist-to-height ratio categories
+    ### Waist-to-height ratio categories
     whtr_cat = case_when(
       is.na(whtr)      ~ NA_character_,
       whtr < 0.5       ~ "<0.5",
@@ -970,7 +967,7 @@ nhanes_analytic <- nhanes_all |>
       ordered = TRUE
     ),
     
-    # SBP categories
+    ### SBP categories
     sbp_cat = case_when(
       is.na(sbp_mean)  ~ NA_character_,
       sbp_mean < 120   ~ "<120",
@@ -985,7 +982,7 @@ nhanes_analytic <- nhanes_all |>
       ordered = TRUE
     ),
     
-    # DBP categories
+    ### DBP categories
     dbp_cat = case_when(
       is.na(dbp_mean)  ~ NA_character_,
       dbp_mean < 80    ~ "<80",
@@ -999,7 +996,7 @@ nhanes_analytic <- nhanes_all |>
       ordered = TRUE
     ),
     
-    # Numeric variables for ordered categories (for trend tests and ML)
+    ### Numeric variables for ordered categories (for trend tests)
     dii_quart_trend    = if_else(!is.na(dii_quart),    as.numeric(dii_quart)    - 1, NA_real_),
     food_sec_score     = if_else(!is.na(food_sec),     as.numeric(food_sec)     - 1, NA_real_),
     vitD25oh_cat_trend = if_else(!is.na(vitD25oh_cat), as.numeric(vitD25oh_cat) - 1, NA_real_),
@@ -1011,23 +1008,23 @@ nhanes_analytic <- nhanes_all |>
   )
 
 
-# Finalize analytic dataset for regression and ML ---------------------------------------------
-## Construct final analytic dataset that contains all variables required for both regression and machine learning analyses
+# Finalize analytic dataset for regression and machine learning -------------------------------
+## Construct final analytic dataset with all needed variables
 nhanes_analytic <- nhanes_analytic |>
   select(
-    # IDs and survey design
+    ### IDs and survey design
     seqn,
     sddsrvyr, cycle_str, sdmvpsu, sdmvstra,
     wtint2yr, wtmec2yr, wtint8yr, wtmec8yr,
     
-    # Demographics 
+    ### Demographics 
     age,          # Age
     sex,          # Sex (Male/Female)
     race,         # Race/ethnicity (5 categories)
     educ,         # Education (<9, 9–12, >12 years)
     pir,          # Poverty-income ratio
     
-    # Psychosocial and behavioral factors
+    ### Psychosocial and behavioral factors
     smoking,         # Smoking status (Never/Former/Current)
     phys_act,        # Physical activity (Sedentary/Moderate/Intense)
     phys_act_trend,  # Physical activity trend (0–2)
@@ -1037,7 +1034,7 @@ nhanes_analytic <- nhanes_analytic |>
     any_alcohol,     # Self-reported alcohol use (0/1; from ALQ101)
     alcohol,         # Self-reported alcohol use (No/Yes factor)
     
-    # Anthropometrics and cardiometabolic variables
+    ### Anthropometrics and cardiometabolic variables
     bmi,          # Body mass index (kg/m^2)  
     whtr,         # Waist-to-height ratio      
     sbp_mean,     # Mean systolic BP (mmHg)    
@@ -1047,7 +1044,7 @@ nhanes_analytic <- nhanes_analytic |>
     non_hdl,      # Non-HDL cholesterol (mg/dL)
     hba1c,        # HbA1c (%)
     
-    # Anthropometric and BP categories 
+    ### Anthropometric and BP categories 
     bmi_cat,
     bmi_cat_trend,  # BMI category trend (0–5)
     whtr_cat,
@@ -1057,7 +1054,7 @@ nhanes_analytic <- nhanes_analytic |>
     dbp_cat,
     dbp_cat_trend,  # DBP category trend (0–3)
     
-    # Vitamin D and DII summary scores
+    ### Vitamin D and DII summary scores
     vitD25oh,             # Serum Vitamin D [25(OH)D] (nmol/L)
     vitD25oh_cat,         # Vitamin D categories
     vitD25oh_cat_trend,   # Vitamin D category trend (0–2)
@@ -1066,7 +1063,7 @@ nhanes_analytic <- nhanes_analytic |>
     dii_quart_trend,      # DII quartile trend (0–3)
     dii_etoh,             # DII including alcohol (secondary)
     
-    # DII component nutrient quartiles 
+    ### DII component nutrient quartiles 
     kcal_quart, carb_quart, protein_quart, totalfat_quart, satfat_quart,
     pufa_quart, mufa_quart, n3fat_quart, n6fat_quart, choles_quart,
     vitA_quart, bcarotene_quart, vitC_quart, vitE_quart,
@@ -1074,7 +1071,7 @@ nhanes_analytic <- nhanes_analytic |>
     riboflavin_quart, niacin_quart, iron_quart, mg_quart, zn_quart, se_quart,
     fiber_quart, caffeine_quart,
     
-    # Disease outcomes and family history (0/1)
+    ### Disease outcomes and family history
     asthma,       # Asthma
     ar,           # Allergic rhinitis
     arthritis,    # Inflammatory arthritis
@@ -1082,10 +1079,10 @@ nhanes_analytic <- nhanes_analytic |>
     htn,          # Hypertension
     ad,           # Eczema (2005–06)
     fa,           # Food allergy (2007–10)
-    fh_asthma     # Family history of asthma (0/1)
+    fh_asthma     # Family history of asthma
   )
 
-## Set reference levels for key categorical variables used in regression models
+## Set reference levels for key categorical variables in regression models
 nhanes_analytic <- nhanes_analytic |>
   mutate(
     race         = fct_relevel(as.factor(race),         "Non-Hispanic White"),
@@ -1095,8 +1092,7 @@ nhanes_analytic <- nhanes_analytic |>
     bmi_cat      = fct_relevel(as.factor(bmi_cat),      "Normal (18.5–24.9)")
   )
 
-
-## Save analytic dataset for use in downstream regression and machine learning analyses
+## Save analytic dataset for later use
 saveRDS(nhanes_analytic, file = "nhanes_analytic.rds")
 
 ## Add a constant for total population estimates
@@ -1123,50 +1119,50 @@ des_mec_8yr <- svydesign(
   data    = nhanes_analytic
 )
 
-## Total weighted population using MEC weights (stored)
+## Total weighted population using MEC weights
 total_pop_mec_8yr <- svytotal(~one, design = des_mec_8yr)
 
 # Regression dataset generation ---------------------------------------------------------------
-## Set survey and contrast options for regression models.
+## Set survey and contrast options for regression models
 options(survey.lonely.psu = "adjust")
 options(contrasts = c("contr.treatment", "contr.treatment"))
 
-## Ensure that constant variable for total population estimates is present
+## Ensure presence of constant variable for total population estimates
 if (!"one" %in% names(nhanes_analytic)) {
   nhanes_analytic <- nhanes_analytic |>
     mutate(one = 1)
 }
 
 ## Construct outcome-specific analytic datasets restricted to non-missing outcomes
-### Asthma (all cycles, non-missing)
+### Asthma non-missing
 asthma_reg <- nhanes_analytic |>
   filter(!is.na(asthma))
 
-### Allergic rhinitis (all cycles, non-missing)
+### Allergic rhinitis non-missing
 ar_reg <- nhanes_analytic |>
   filter(!is.na(ar))
 
-### Inflammatory arthritis (all cycles, non-missing)
+### Inflammatory arthritis non-missing
 inflam_reg <- nhanes_analytic |>
   filter(!is.na(arthritis))
 
-### Hypertension (all cycles, non-missing)
+### Hypertension non-missing
 htn_reg <- nhanes_analytic |>
   filter(!is.na(htn))
 
-### Diabetes (all cycles, non-missing)
+### Diabetes non-missing
 dm_reg <- nhanes_analytic |>
   filter(!is.na(diabetes))
 
-### Eczema (2005–2006, non-missing)
+### Eczema non-missing
 ad_reg <- nhanes_analytic |>
   filter(sddsrvyr == 4, !is.na(ad))
 
-### Food allergy (2007–2010, non-missing)
+### Food allergy non-missing
 fa_reg <- nhanes_analytic |>
   filter(sddsrvyr %in% c(5, 6), !is.na(fa))
 
-## Define helper to construct outcome-specific survey designs using 8-year MEC weights
+## Define helper function to construct outcome-specific survey designs using 8-year MEC weights
 make_design_wt8yr <- function(data) {
   svydesign(
     ids     = ~sdmvpsu,
@@ -1237,7 +1233,7 @@ outcome_designs <- list(
 # Variable information summary-----------------------------------------------------------------
 ## Full variable labels
 var_labels <- c(
-  # IDs / design
+  ### IDs / survey design
   seqn      = "Participant ID",
   sddsrvyr  = "Survey cycle",
   cycle_str = "Survey cycle label",
@@ -1248,14 +1244,14 @@ var_labels <- c(
   wtint8yr  = "Interview weight (8-year pooled)",
   wtmec8yr  = "MEC exam weight (8-year pooled)",
   
-  # Demographics
+  ### Demographics
   age   = "Age in years",
   sex   = "Sex",
   race  = "Race/ethnicity",
   educ  = "Education level",
   pir   = "Poverty-income ratio",
   
-  # Behavioral
+  ### Behavioral
   smoking         = "Smoking status",
   phys_act        = "Recreational physical activity level",
   phys_act_trend  = "Physical activity trend score",
@@ -1265,7 +1261,7 @@ var_labels <- c(
   any_alcohol     = "Ever drank ≥12 drinks in any 1 year (ALQ101)",
   alcohol         = "Alcohol use",
   
-  # Anthropometrics and cardiometabolic
+  ### Anthropometric and cardiometabolic
   bmi       = "Body mass index (kg/m^2)",
   whtr      = "Waist-to-height ratio",
   sbp_mean  = "Mean systolic blood pressure (mmHg)",
@@ -1283,7 +1279,7 @@ var_labels <- c(
   dbp_cat        = "Diastolic blood pressure category",
   dbp_cat_trend  = "DBP category trend score",
   
-  # Vitamin D / DII
+  ### Nutrient (vitamin D and DII)
   vitD25oh           = "Serum Vitamin D [25(OH)D] concentration (nmol/L)",
   vitD25oh_cat       = "Vitamin D status category",
   vitD25oh_cat_trend = "Vitamin D status trend score",
@@ -1292,7 +1288,7 @@ var_labels <- c(
   dii_quart_trend    = "DII quartile trend score",
   dii_etoh           = "Dietary Inflammatory Index including alcohol",
   
-  # Nutrient quartiles
+  ### DII individual nutrient quartiles
   kcal_quart      = "Total energy intake (kcal) quartile",
   carb_quart      = "Carbohydrate intake quartile",
   protein_quart   = "Protein intake quartile",
@@ -1320,7 +1316,7 @@ var_labels <- c(
   fiber_quart     = "Fiber intake quartile",
   caffeine_quart  = "Caffeine intake quartile",
   
-  # Outcomes and related variables
+  ### Outcomes and related variables
   asthma    = "Reported asthma",
   ar        = "Reported allergic rhinitis (hay fever)",
   arthritis = "Reported rheumatoid or psoriatic arthritis",
@@ -1331,10 +1327,9 @@ var_labels <- c(
   fh_asthma = "Family history of asthma"
 )
 
-## Define variable categories (design, core predictors, nutrient predictors,
-## main exposures, outcomes, and selected covariates).
+## Define variable categories
 var_roles <- c(
-  # Design / ID
+  ### ID and design
   seqn      = "id",
   sddsrvyr  = "design",
   cycle_str = "design",
@@ -1345,7 +1340,7 @@ var_roles <- c(
   wtint8yr  = "weight_8yr",
   wtmec8yr  = "weight_8yr",
   
-  # Core predictors
+  ### Core predictors
   age   = "predictor_core",
   sex   = "predictor_core",
   race  = "predictor_core",
@@ -1378,7 +1373,7 @@ var_roles <- c(
   dbp_cat        = "predictor_core",
   dbp_cat_trend  = "predictor_core",
   
-  # Vitamin D / DII exposure domain
+  ### Vitamin D and DII
   vitD25oh           = "predictor_core",
   vitD25oh_cat       = "predictor_core",
   vitD25oh_cat_trend = "predictor_core",
@@ -1387,7 +1382,7 @@ var_roles <- c(
   dii_quart_trend    = "exposure_DII_trend",
   dii_etoh           = "exposure_DII_secondary",
   
-  # Nutrient quartiles
+  ### Nutrient quartiles
   kcal_quart      = "predictor_nutrient",
   carb_quart      = "predictor_nutrient",
   protein_quart   = "predictor_nutrient",
@@ -1415,7 +1410,7 @@ var_roles <- c(
   fiber_quart     = "predictor_nutrient",
   caffeine_quart  = "predictor_nutrient",
   
-  # Outcomes and related covariates
+  ### Outcomes
   asthma    = "outcome_primary",
   ar        = "outcome_primary",
   arthritis = "outcome_primary",
@@ -1488,21 +1483,21 @@ make_var_summary <- function(data, vars = names(data),
   })
 }
 
-## Specify variables to include in data dictionary table
+## Variables to include in data dictionary table
 vars_for_dict <- c(
-  # Design / ID
+  # ID and design
   "seqn","sddsrvyr","cycle_str","sdmvpsu","sdmvstra",
   "wtint2yr","wtmec2yr","wtint8yr","wtmec8yr",
   
   # Demographics
   "age","sex","race","educ","pir",
   
-  # Behaviours / psychosocial
+  # Psychosocial
   "smoking","phys_act","phys_act_trend",
   "food_sec",
   "insur","alcohol",
   
-  # Anthropometrics & cardio-metabolic
+  # Anthropometric and cardiometabolic
   "bmi","whtr","sbp_mean","dbp_mean",
   "tchol","hdl","non_hdl","hba1c",
   "bmi_cat","bmi_cat_trend",
@@ -1510,7 +1505,7 @@ vars_for_dict <- c(
   "sbp_cat","sbp_cat_trend",
   "dbp_cat","dbp_cat_trend",
   
-  # Vitamin D / DII
+  # Vitamin D and DII
   "vitD25oh","vitD25oh_cat","vitD25oh_cat_trend",
   "dii","dii_quart","dii_quart_trend",
   "dii_etoh",
@@ -1523,7 +1518,7 @@ vars_for_dict <- c(
   "riboflavin_quart","niacin_quart","iron_quart","mg_quart","zn_quart","se_quart",
   "fiber_quart","caffeine_quart",
   
-  # Outcomes and related variables
+  # Outcomes
   "asthma","ar","arthritis","diabetes","htn","ad","fa",
   "fh_asthma"
 )
@@ -1535,7 +1530,7 @@ var_summary <- make_var_summary(
   var_labels = var_labels
 )
 
-## Define grouping of variables for Table 1
+## Grouping of variables for Table 1
 table1_group_map <- c(
   seqn        = "Demographics",
   sddsrvyr    = "Demographics",
@@ -1625,10 +1620,10 @@ identify_binary <- function(x) {
   length(vals) <= 2 && all(vals %in% c(0, 1))
 }
 
-## Prepare Table 1
+## Prepare Table 1 (data dictionary table)
 table1_df <- var_summary |>
   mutate(
-    # Binary 0/1 variable handling
+    ### Binary 0/1 variable handling
     binary_flag = map_lgl(variable, ~ identify_binary(nhanes_analytic[[.x]])),
     Type = case_when(
       binary_flag ~ "binary",
@@ -1656,7 +1651,7 @@ table1_df <- var_summary |>
     Min    = if_else(binary_flag, 0, Min),
     Max    = if_else(binary_flag, 1, Max),
     Levels = if_else(binary_flag, "0=No; 1=Yes", Levels),
-    # Fine-tune levels of certain variables
+    ### Fine-tune levels of select ariables
     Levels = case_when(
       Variable == "sddsrvyr"     ~ "4=2005–06; 5=2007–08; 6=2009–10; 7=2011–12",
       Variable == "bmi_cat"      ~ "Underweight (<18.5); Normal (18.5–24.9); Overweight (25–29.9); Obesity I (30–34.9); Obesity II (35–39.9); Obesity III (≥40)",
@@ -1698,30 +1693,30 @@ nhanes_table1_gt <- table1_df |>
     `N missing` = md("N missing"),
     `% missing` = md("% missing")
   ) |>
-  # % missing always with 3 decimals
+  ### % missing always with 3 decimals
   fmt_number(
     columns = `% missing`,
     decimals = 3
   ) |>
-  # Min/Max for selected continuous variables: 1 decimal
+  ### Min/Max for selected continuous variables: 1 decimal
   fmt_number(
     columns = c(Min, Max),
     decimals = 1,
     rows = Variable %in% labs_vars & Type != "binary"
   ) |>
-  # Min/Max for all other non-binary numeric variables: 0 decimals
+  ### Min/Max for all other non-binary numeric variables: 0 decimals
   fmt_number(
     columns = c(Min, Max),
     decimals = 0,
     rows = !(Variable %in% labs_vars) & Type != "binary"
   ) |>
-  # Min/Max for binary 0/1 variables: 0 decimals (0 and 1)
+  ### Min/Max for binary 0/1 variables: 0 decimals (0 and 1)
   fmt_number(
     columns = c(Min, Max),
     decimals = 0,
     rows = Type == "binary"
   ) |>
-  # For seqn, suppress thousand separators
+  ### Supress seqn separators
   fmt_number(
     columns = c(Min, Max),
     decimals = 0,
@@ -1730,7 +1725,7 @@ nhanes_table1_gt <- table1_df |>
   ) |>
   cols_align(align = "left") |>
   tab_options(table.font.size = px(12)) |>
-  # Bold column headings and row group labels
+  ### Bold column headings and row group labels
   tab_style(
     style = list(
       cell_text(weight = "bold")
@@ -1866,60 +1861,60 @@ uni1_labels <- c(
 ## Mapping of factor levels to labels for characteristics and univariable models
 custom_order_uni1 <- tribble(
   ~predictor, ~level,                                  ~variable_label,                                         ~rank,
-  # Sex
+  ### Sex
   "sex",      "Male",                                  "Sex: Male",                                            1,
   "sex",      "Female",                                "Sex: Female",                                          2,
 
-  # Race (matches nhanes_analytic$race levels)
+  ### Race
   "race",     "Non-Hispanic White",                    "Race/ethnicity: Non-Hispanic White",                   1,
   "race",     "Non-Hispanic Black",                    "Race/ethnicity: Non-Hispanic Black",                   2,
   "race",     "Mexican American",                      "Race/ethnicity: Mexican American",                     3,
   "race",     "Other Hispanic",                        "Race/ethnicity: Other Hispanic",                       4,
   "race",     "Other/multiracial",                     "Race/ethnicity: Other race",                           5,
 
-  # Insurance
+  ### Insurance
   "insur",    "No",                                    "Insurance: No",                                        1,
   "insur",    "Yes",                                   "Insurance: Yes",                                       2,
 
-  # Education (matches nhanes_analytic$educ levels)
+  ### Education
   "educ",     "<9 years",                              "Education: <9",                                        1,
   "educ",     "9–12 years",                            "Education: 9-12",                                      2,
   "educ",     ">12 years",                             "Education: >12",                                       3,
 
-  # Food security
+  ### Food security
   "food_sec", "Full",                                  "Food security: Full",                                  1,
   "food_sec", "Marginal",                              "Food security: Marginal",                              2,
   "food_sec", "Low",                                   "Food security: Low",                                   3,
   "food_sec", "Very low",                              "Food security: Very low",                              4,
 
-  # Smoking
+  ### Smoking
   "smoking",  "Never",                                 "Smoking status: Never",                                1,
   "smoking",  "Current",                               "Smoking status: Current",                              2,
   "smoking",  "Former",                                "Smoking status: Former",                               3,
 
-  # Alcohol
+  ### Alcohol
   "alcohol",  "No",                                    "Alcohol use: No",                                      1,
   "alcohol",  "Yes",                                   "Alcohol use: Yes",                                     2,
 
-  # Physical activity
+  ### Physical activity
   "phys_act", "Sedentary",                             "Physical activity: Sedentary",                         1,
   "phys_act", "Moderate",                              "Physical activity: Moderate",                          2,
   "phys_act", "Intense",                               "Physical activity: Intense",                           3,
 
-  # SBP categories (match levels in nhanes_analytic)
+  ### SBP categories
   "sbp_cat",  "<120",                                  "Systolic blood pressure category: <120",               1,
   "sbp_cat",  "120–129",                               "Systolic blood pressure category: 120-129",            2,
   "sbp_cat",  "130–139",                               "Systolic blood pressure category: 130-139",            3,
   "sbp_cat",  "140–159",                               "Systolic blood pressure category: 140-159",           4,
   "sbp_cat",  "≥160",                                  "Systolic blood pressure category: >=160",              5,
 
-  # DBP categories
+  ### DBP categories
   "dbp_cat",  "<80",                                   "Diastolic blood pressure category: <80",               1,
   "dbp_cat",  "80–89",                                 "Diastolic blood pressure category: 80-89",             2,
   "dbp_cat",  "90–99",                                 "Diastolic blood pressure category: 90-99",             3,
   "dbp_cat",  "≥100",                                  "Diastolic blood pressure category: >=100",             4,
 
-  # BMI categories
+  ### BMI categories
   "bmi_cat",  "Underweight (<18.5)",                   "BMI category: Underweight",                            1,
   "bmi_cat",  "Normal (18.5–24.9)",                    "BMI category: Normal weight",                          2,
   "bmi_cat",  "Overweight (25–29.9)",                  "BMI category: Overweight",                             3,
@@ -1927,12 +1922,12 @@ custom_order_uni1 <- tribble(
   "bmi_cat",  "Obesity II (35–39.9)",                  "BMI category: Obesity II",                             5,
   "bmi_cat",  "Obesity III (≥40)",                     "BMI category: Obesity III",                            6,
 
-  # WHtR categories
+  ### WHtR categories
   "whtr_cat", "<0.5",                                  "Waist-to-height ratio category: <0.5",                 1,
   "whtr_cat", "0.5–0.59",                              "Waist-to-height ratio category: 0.5-0.59",             2,
   "whtr_cat", "≥0.6",                                  "Waist-to-height ratio category: >=0.6",                3,
 
-  # Vitamin D categories
+  ### Vitamin D categories
   "vitD25oh_cat", "<20 (deficient)",                   "25(OH)D category: <20",                                1,
   "vitD25oh_cat", "20–29 (insufficient)",              "25(OH)D category: 20-29",                              2,
   "vitD25oh_cat", "≥30 (sufficient)",                  "25(OH)D category: >=30",                               3
@@ -1949,19 +1944,19 @@ add_ref_and_label <- function(td, des, predictor, outcome_name, outcome_info, ba
 
   var_data <- des$variables[[predictor]]
 
-  ## Numeric predictors have no reference row, only single row with label
+  ### Numeric predictors have no reference row, only single row with label
   if (is.numeric(var_data) || is.integer(var_data)) {
     td <- td |>
       mutate(variable_label = base_label)
     return(td)
   }
 
-  ## Character predictors converted to factor
+  ### Character predictors converted to factor
   if (is.character(var_data)) {
     var_data <- factor(var_data)
   }
 
-  ## Detect polynomial terms and assign linear or quadratic trend
+  ### Detect polynomial terms and assign linear or quadratic trend
   if (is_poly_term(td$term, predictor)) {
     td <- td |>
       mutate(
@@ -1974,7 +1969,7 @@ add_ref_and_label <- function(td, des, predictor, outcome_name, outcome_info, ba
     return(td)
   }
 
-  ## Add reference row and level labels for factor predictors
+  ### Add reference row and level labels for factor predictors
   if (is.factor(var_data)) {
     levels_vec <- levels(var_data)
     pattern    <- paste0("^", predictor)
@@ -2016,11 +2011,11 @@ nhanes_table1_gt
 
 **Cohort characteristics**
 
-Cohort characteristics are shown in **Table 2** for the full cohort (2005–2012) and in **Table 3** for the time-restricted cohorts for eczema (2005–2006) and food allergy (2007–2010). In general, participants with asthma, allergic rhinitis, eczema, and food allergy were similar to the respective full cohort populations, with only modest differences (e.g., higher proportions of males and small variations in physical activity and smoking patterns). Patients with allergic rhinitis, inflammatory arthritis, diabetes, and hypertension were slightly older than the full cohort. Those with inflammatory arthritis, diabetes, and hypertension also exhibited higher DII scores, while participants with allergic rhinitis had slightly lower DII scores relative to the full cohort. There were smaller differences in DII scores in the eczema and food allergy cohorts relative to their respective time-restricted full cohorts.
+Cohort characteristics are shown in **Table 2** for the full cohort (2005–2012) and in **Table 3** for the time-restricted cohorts for eczema (2005–2006) and food allergy (2007–2010). In general, participants with asthma, allergic rhinitis, eczema, and food allergy were similar to the respective full cohort populations, with modest differences (e.g., higher proportions of males and small variations in physical activity and smoking patterns). Patients with allergic rhinitis, inflammatory arthritis, diabetes, and hypertension were slightly older than the full cohort. Those with inflammatory arthritis, diabetes, and hypertension also exhibited higher DII scores, while participants with allergic rhinitis had slightly lower DII scores relative to the full cohort. There were smaller differences in DII scores in the eczema and food allergy cohorts relative to their respective time-restricted full cohorts. These differences were formally assessed in subsequent regression analyses.
 
 ```{r}
-# Continuous covariates and categorical levels ----------------------------------------------
-## Continuous characteristics to summarize as mean (SE)
+# Continuous covariates and categorical levels ------------------------------------------------
+## Continuous characteristics
 char_continuous <- c("age", "pir", "hdl", "non_hdl", "tchol", "hba1c", "dii", "dii_etoh")
 
 ## Predictor order 
@@ -2105,17 +2100,17 @@ compute_char_for_group <- function(design, group_name) {
         value <- sprintf("%.2f (%.2f)", m, se)
 
       } else {
-        # Categorical: survey-weighted prevalence (SE) for each specified level
+        ### Categorical: survey-weighted prevalence (SE) for each level
         var <- vars[[predictor]]
 
-        # Coerce to factor and drop unused levels
+        ### Coerce to factor and drop unused levels
         if (!is.factor(var)) {
           var <- factor(var)
         } else {
           var <- droplevels(var)
         }
 
-        # If the target level is missing or not in the factor levels, return NA
+        ### If target level is missing or not in factor levels, return NA
         if (is.na(lvl) || !lvl %in% levels(var)) {
           return(tibble(
             Group          = group_name,
@@ -2124,7 +2119,7 @@ compute_char_for_group <- function(design, group_name) {
           ))
         }
 
-        # Restrict to non-missing values for this predictor
+        ### Restrict to non-missing values for predictor
         nonmiss <- !is.na(var)
         if (!any(nonmiss)) {
           return(tibble(
@@ -2134,10 +2129,10 @@ compute_char_for_group <- function(design, group_name) {
           ))
         }
 
-        # Subset design to non-missing rows for predictor
+        ### Subset design to non-missing rows for predictor
         design_nm <- subset(design, nonmiss)
 
-        # Recompute vars for subsetted design and attach clean indicator
+        ### Compute vars for subsetted design and attach indicator
         vars_nm <- design_nm$variables
         vars_nm$indicator <- as.numeric(var[nonmiss] == lvl)
         design_nm$variables <- vars_nm
@@ -2165,7 +2160,7 @@ compute_char_for_group <- function(design, group_name) {
   )
 }
 
-# Full cohort and primary outcomes -----------------------------------------------------------
+# Full cohort and primary outcomes-------------------------------------------------------------
 des_full_primary <- des_full
 
 des_asthma_cases  <- subset(des_asthma_reg,  asthma == 1)
@@ -2181,6 +2176,13 @@ group_designs_primary <- list(
   "Inflammatory arthritis"  = des_inflam_cases,
   "Diabetes"                = des_dm_cases,
   "Hypertension"            = des_htn_cases
+)
+
+## Unweighted Ns for primary groups
+group_ns_primary <- map_int(group_designs_primary, ~ nrow(.x$variables))
+group_labels_primary <- setNames(
+  paste0(names(group_designs_primary), " (N=", group_ns_primary, ")"),
+  names(group_designs_primary)
 )
 
 char_primary_long <- imap_dfr(
@@ -2206,6 +2208,11 @@ char_primary_wide <- char_primary_long |>
     id_cols     = Characteristic,
     names_from  = Group,
     values_from = Value
+  ) |>
+  ### Add unweighted N to column labels
+  rename_with(
+    ~ group_labels_primary[.x],
+    .cols = any_of(names(group_labels_primary))
   )
 
 tbl_char_primary <- char_primary_wide |>
@@ -2225,7 +2232,7 @@ tbl_char_primary <- char_primary_wide |>
     locations = cells_title(groups = "title")
   )
 
-# Time-restricted eczema and food allergy cohorts -------------------------------------------
+# Time-restricted eczema and food allergy cohorts----------------------------------------------
 ad_cohort <- nhanes_analytic |>
   filter(sddsrvyr == 4, !is.na(ad))
 
@@ -2243,6 +2250,13 @@ group_designs_secondary <- list(
   "Eczema"               = des_ad_cases,
   "Cohort (2007–2010)"   = des_fa_cohort,
   "Food allergy"         = des_fa_cases
+)
+
+## Unweighted Ns for secondary groups
+group_ns_secondary <- map_int(group_designs_secondary, ~ nrow(.x$variables))
+group_labels_secondary <- setNames(
+  paste0(names(group_designs_secondary), " (N=", group_ns_secondary, ")"),
+  names(group_designs_secondary)
 )
 
 char_secondary_long <- imap_dfr(
@@ -2268,6 +2282,11 @@ char_secondary_wide <- char_secondary_long |>
     id_cols     = Characteristic,
     names_from  = Group,
     values_from = Value
+  ) |>
+  ### Add unweighted N to column labels
+  rename_with(
+    ~ group_labels_secondary[.x],
+    .cols = any_of(names(group_labels_secondary))
   )
 
 tbl_char_secondary <- char_secondary_wide |>
@@ -2287,18 +2306,17 @@ tbl_char_secondary <- char_secondary_wide |>
     locations = cells_title(groups = "title")
   )
 
-# Print cohort characteristic tables --------------------------------------------------------
+# Print cohort characteristic tables-----------------------------------------------------------
 tbl_char_primary
 tbl_char_secondary
 ```
 
 **Weighted prevalence analysis**
 
-Survey-weighted prevalence estimates were calculated for all disease outcomes, both overall and across DII quartiles (**Table 4**; **Figure 1**). Overall disease prevalence ranged from 1.3% for inflammatory arthritis to 15.9% for asthma. As compared with the weighted prevalence in the least inflammatory quartile (Q1), the weighted prevalence in the most inflammatory quartile (Q4) was significantly higher for inflammatory arthritis (2.1% vs. 0.8%; p\<0.05) and significantly lower for allergic rhinitis (11.5% vs. 14.1%; p\<0.05). There was a non-significant trend of higher Q4 disease prevalence for eczema and hypertension. Together, this suggested variable, modest effects of dietary inflammatory potential on disease outcomes.
+Survey-weighted prevalence estimates were calculated for all disease outcomes, both overall and across DII quartiles (**Table 4**; **Figure 1**). Overall disease prevalence ranged from 1.3% for inflammatory arthritis to 15.9% for asthma. As compared with the weighted prevalence in the least inflammatory quartile (Q1), the weighted prevalence in the most inflammatory quartile (Q4) was significantly higher for inflammatory arthritis (2.1% vs. 0.8%; p\<0.05) and significantly lower for allergic rhinitis (11.5% vs. 14.1%; p\<0.05). There was a non-significant trend of higher Q4 disease prevalence for eczema and hypertension. Together, this suggested variable, modest effects of dietary inflammatory content on disease outcomes.
 
 ```{r}
 # Weighted prevalence by DII quartile----------------------------------------------------------
-
 ## Outcome configurations for prevalence
 outcome_list_all <- c(outcome_list, outcome_list_secondary)
 
@@ -2307,7 +2325,7 @@ compute_prev_by_dii <- function(info) {
   y         <- info$var
   label_raw <- info$label
 
-  ### Re-label atopic dermatitis to eczema for consistency
+  ### Re-label atopic dermatitis to eczema
   label <- recode(label_raw, "Atopic dermatitis" = "Eczema")
 
   f    <- as.formula(paste0("~", y))
@@ -2373,7 +2391,7 @@ prev_all_long <- prev_all_long |>
       grepl("^Q4", dii_group)       ~ "Q4",
       TRUE                          ~ dii_group
     ),
-    ## Set base outcome order (for tables, etc.)
+    ### Set base outcome order
     Outcome = factor(
       Outcome,
       levels = c(
@@ -2388,7 +2406,7 @@ prev_all_long <- prev_all_long |>
     )
   )
 
-## Compute p-values for Q2–Q4 vs Q1 using survey-weighted logistic regression
+## Compute p-values for Q2–Q4 vs. Q1 via survey-weighted logistic regression
 compute_prev_pvals <- function(info) {
   des       <- info$design
   y         <- info$var
@@ -2421,7 +2439,7 @@ compute_prev_pvals <- function(info) {
 
   other_levels <- levels_dq[-1]
 
-  # Fit survey-weighted logistic regression: outcome ~ dii_quart
+  ### Fit survey-weighted logistic regression
   form <- as.formula(paste0(y, " ~ dii_quart"))
 
   fit <- tryCatch(
@@ -2471,7 +2489,7 @@ prev_pvals <- purrr::map_dfr(
   compute_prev_pvals
 )
 
-## Join p-values back to prevalence data
+## Join p-values to prevalence data
 prev_all_long <- prev_all_long |>
   left_join(
     prev_pvals,
@@ -2489,7 +2507,7 @@ disease_base_cols <- c(
   "Food allergy"           = "#4B2E0F"
 )
 
-## Alpha for quartiles; overall uses a mid alpha
+## Alpha for quartiles; overall uses mid alpha
 alpha_quart <- c(
   "Q1" = 0.4,
   "Q2" = 0.6,
@@ -2502,18 +2520,15 @@ prev_all_long <- prev_all_long |>
   mutate(
     base_col = disease_base_cols[as.character(Outcome)],
     fill_col = case_when(
-      dii_group_simple == "Overall" ~ scales::alpha(base_col, alpha_overall), # mid shade
+      dii_group_simple == "Overall" ~ scales::alpha(base_col, alpha_overall), 
       TRUE                          ~ scales::alpha(base_col, alpha_quart[dii_group_simple])
     ),
-    ## Pretty labels for facets, including split lines
     Outcome_pretty = forcats::fct_recode(
       Outcome,
       "Allergic\nrhinitis"      = "Allergic rhinitis",
       "Inflammatory\narthritis" = "Inflammatory arthritis"
     ),
-    ## Explicit facet order:
-    ## Asthma, Allergic rhinitis, Inflammatory arthritis, Eczema,
-    ## Food allergy, Diabetes, Hypertension
+    ### Explicit facet order
     Outcome_pretty = factor(
       Outcome_pretty,
       levels = c(
@@ -2526,7 +2541,6 @@ prev_all_long <- prev_all_long |>
         "Hypertension"
       )
     ),
-    # Numeric x positions: extra gap between Overall and Q1
     x_pos = case_when(
       dii_group_simple == "Overall" ~ 1.0,
       dii_group_simple == "Q1"      ~ 2.5,
@@ -2537,16 +2551,15 @@ prev_all_long <- prev_all_long |>
     )
   )
 
-## Split data for quartiles vs overall
+## Split data for quartiles vs. overall
 prev_quart <- prev_all_long |>
   filter(dii_group_simple != "Overall")
 
 prev_overall <- prev_all_long |>
   filter(dii_group_simple == "Overall")
 
-## Table 4: Weighted prevalence table with SEs and p-values------------------------------------
-
-## Ensure Outcome ordering for the table as requested
+# Weighted prevalence table--------------------------------------------------------------------
+## Outcome ordering for table
 prev_all_long <- prev_all_long |>
   mutate(
     Outcome = factor(
@@ -2618,9 +2631,9 @@ nhanes_table4_gt <- table4_df |>
     )
   )
 
-## Weighted prevalence plot--------------------------------------------------------------------
+# Weighted prevalence plot---------------------------------------------------------------------
 weighted_prev_plot_all <- ggplot() +
-  ### Quartile bars
+  ## Quartile bars
   geom_col(
     data = prev_quart,
     aes(
@@ -2630,14 +2643,14 @@ weighted_prev_plot_all <- ggplot() +
     ),
     width = 0.9
   ) +
-  ### Overall bars: mid-shade fill, thick dark border
+  ## Overall bars
   geom_col(
     data = prev_overall,
     aes(
       x     = x_pos,
       y     = prev_pct,
       fill  = fill_col,
-      color = base_col   # darkest outline
+      color = base_col
     ),
     width = 0.9,
     size  = 0.9
@@ -2670,19 +2683,20 @@ weighted_prev_plot_all <- ggplot() +
     panel.grid.minor.y = element_blank()
   )
 
-## Print Table 4 and Figure 1------------------------------------------------------------------
+# Print Table 4 and Figure 1-------------------------------------------------------------------
 nhanes_table4_gt
 weighted_prev_plot_all
-
 ```
 
 **Univariable regression analyses**
 
-Survey-weighted univariable logistic regression analyses were performed to examine associations between core sociodemographic, behavioral, clinical, and dietary covariates (**Tables 5-6**) or individual nutrient quartile covariates (**Tables 7-8**) and disease outcomes. Results for asthma, allergic rhinitis, inflammatory arthritis, diabetes, and hypertension are shown in **Table 5** and **Table 7**. Results for eczema and food allergy are shown in **Table 6** and **Table 8**.
+Survey-weighted univariable logistic regression analyses were performed to examine associations between core sociodemographic, behavioral, clinical, and dietary covariates (**Tables 5–6**) or individual nutrient quartile covariates (**Tables 7–8**) and disease outcomes. Results for asthma, allergic rhinitis, inflammatory arthritis, diabetes, and hypertension are shown in **Table 5** and **Table 7**. Results for eczema and food allergy are shown in **Table 6** and **Table 8**.
 
-Among the core covariates, the odds of allergic rhinitis increased with age (OR 1.06, 95% CI 1.05–1.08; p\<0.001), while asthma decreased with age (OR 0.97, 95% CI 0.96–0.99; p\<0.001). Female participants had higher odds of asthma (OR 1.35, 95% CI 1.17–1.56; p\<0.001), allergic rhinitis (OR 1.39, 95% CI 1.19–1.61; p\<0.001), and inflammatory arthritis (OR 2.31, 95% CI 1.53–3.49; p\<0.001). Non-Hispanic Black (OR 0.62, 95% CI 0.50–0.78; p\<0.001) and Mexican American (OR 0.35, 95% CI 0.27–0.45; p\<0.001) participants had lower odds of allergic rhinitis, and Mexican American participants (OR 0.42, 95% CI 0.32–0.55; p\<0.001) also had lower odds of asthma. Smoking increased the odds of inflammatory arthritis (OR 2.64, 95% CI 1.63–4.27; p\<0.001). Among secondary outcomes, there was a trend of higher odds of eczema associated with obesity class III (OR 2.22, 95% CI 1.24–3.97; p=0.088), while Mexican American participants had lower odds of food allergy (OR 0.62, 95% CI 0.48–0.81; p=0.013). Regarding dietary inflammatory exposures, DII inclusive of alcohol intake was significantly associated with lower odds of allergic rhinitis (OR 0.96, 95% CI 0.92–0.99; p=0.044) and higher odds of hypertension (OR 1.05, 95% CI 1.01–1.08; p=0.049). In general, DII associations were not significant. Cardiometabolic outcomes were strongly associated with age and adiposity, for example increased odds of hypertension with age (OR 1.09, 95% CI 1.07–1.10; p\<0.001), obesity class III (OR 7.15, 95% CI 5.10–10.02; p\<0.001), and elevated waist-to-height ratio (OR 4.56, 95% CI 3.49–5.97; p\<0.001).
+Among the core covariates, the odds of allergic rhinitis increased with age (OR 1.06, 95% CI 1.05–1.08; p\<0.001), while asthma decreased with age (OR 0.97, 95% CI 0.96–0.99; p\<0.001). Female participants had higher odds of asthma (OR 1.35, 95% CI 1.17–1.56; p\<0.001), allergic rhinitis (OR 1.39, 95% CI 1.19–1.61; p\<0.001), and inflammatory arthritis (OR 2.31, 95% CI 1.53–3.49; p\<0.001). Non-Hispanic Black (OR 0.62, 95% CI 0.50–0.78; p\<0.001) and Mexican American (OR 0.35, 95% CI 0.27–0.45; p\<0.001) participants had lower odds of allergic rhinitis, and Mexican American participants (OR 0.42, 95% CI 0.32–0.55; p\<0.001) also had lower odds of asthma. Smoking was associated with increased odds of inflammatory arthritis (OR 2.64, 95% CI 1.63–4.27; p\<0.001). Among secondary outcomes, there was a trend of higher odds of eczema associated with obesity class III (OR 2.22, 95% CI 1.24–3.97; p=0.088). Mexican American participants had lower odds of food allergy (OR 0.62, 95% CI 0.48–0.81; p=0.013). Cardiometabolic outcomes were strongly associated with age and adiposity, for example increased odds of hypertension with age (OR 1.09, 95% CI 1.07–1.10; p\<0.001), obesity class III (OR 7.04, 95% CI 5.26–9.41; p\<0.001), and waist-to-height ratio ≥0.6 (OR 4.87, 95% CI 3.89–6.10; p\<0.001).
 
-In nutrient-specific analyses, there was a large degree of variability across conditions, and many associations did not achieve statistical significance after correction for multiple comparisons. Nevertheless, several significant associations were identified. For inflammatory arthritis, intakes of carbohydrates (Q3 OR 0.26, 95% CI 0.13–0.49; p=0.019) and total energy (Q3 OR 0.31, 95% CI 0.16–0.60; p=0.047) within the third quartile of the intake distribution were associated with lower odds of disease. Several non-significant trends were observed for cardiometabolic outcomes. For example, higher saturated fat intake (Q4 OR 1.29, 95% CI 1.04–1.60; p=0.218) and higher cholesterol intake (Q4 OR 1.39, 95% CI 1.11–1.73; p=0.095) showed a trend of increased odds of hypertension.
+Regarding dietary inflammatory exposures, DII inclusive of alcohol intake was significantly associated with lower odds of allergic rhinitis (OR 0.96, 95% CI 0.92–0.99; p=0.044) and higher odds of hypertension (OR 1.05, 95% CI 1.01–1.08; p=0.049). In general, DII associations did not achieve statistical significance.
+
+In nutrient-specific analyses, there was a large degree of variability across conditions, and many associations did not achieve statistical significance. Nevertheless, several significant associations were identified. For inflammatory arthritis, intakes of carbohydrates (Q3 OR 0.26, 95% CI 0.13–0.49; p=0.019) and total energy (Q3 OR 0.31, 95% CI 0.16–0.60; p=0.047) within the third quartile of the intake distribution were associated with lower odds of disease. Several non-significant trends were observed for cardiometabolic outcomes. For example, higher saturated fat intake (Q4 OR 1.29, 95% CI 1.04–1.60; p=0.218) and higher cholesterol intake (Q4 OR 1.39, 95% CI 1.11–1.73; p=0.095) showed a trend of increased odds of hypertension.
 
 ```{r}
 # Univariable analysis 1: core covariates------------------------------------------------------
@@ -2715,7 +2729,7 @@ uni1_predictors <- c(
 
 uni1_predictor_order <- uni1_predictors
 
-## Helper to clean Vitamin D and DII labels
+## Helper function to clean Vitamin D and DII labels
 clean_vitD_DII_labels <- function(df) {
   df |>
     mutate(
@@ -2833,22 +2847,20 @@ uni1_primary_long <- uni1_primary_long |>
     ),
     p_fdr_fmt = ifelse(is.na(p_fdr), "", pvalue(p_fdr, accuracy = 0.001))
   ) |>
-  # Use predictor and variable_label to pull in ranks for ordering
+  ### Use predictor and variable_label to pull in ranks for ordering
   left_join(custom_order_uni1, by = c("predictor", "variable_label")) |>
   mutate(
     predictor = factor(predictor, levels = uni1_predictor_order),
     rank      = coalesce(rank, 1000L)
   ) |>
   clean_vitD_DII_labels() |>
-  # Override rank for specific predictors/levels to enforce desired order
+  ### Override rank for specific predictors/levels to re-order
   mutate(
     rank2 = case_when(
-      # Education: <9, 9–12, >12
       predictor == "educ" & str_detect(variable_label, "Education: <9 years")       ~ 1L,
       predictor == "educ" & str_detect(variable_label, "Education: 9–12 years")     ~ 2L,
       predictor == "educ" & str_detect(variable_label, "Education: >12 years")      ~ 3L,
 
-      # BMI: Underweight, Normal, Overweight, Obesity I, II, III
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Underweight") ~ 1L,
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Normal")     ~ 2L,
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Overweight") ~ 3L,
@@ -2856,25 +2868,21 @@ uni1_primary_long <- uni1_primary_long |>
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Obesity II") ~ 5L,
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Obesity III")~ 6L,
 
-      # Vitamin D category: <20, 20–29, ≥30
       predictor == "vitD25oh_cat" & str_detect(variable_label, "Vitamin D category: <20")   ~ 1L,
       predictor == "vitD25oh_cat" & str_detect(variable_label, "Vitamin D category: 20–29") ~ 2L,
       predictor == "vitD25oh_cat" & str_detect(variable_label, "Vitamin D category: ≥30")   ~ 3L,
 
-      # Systolic BP: <120, 120–129, 130–139, 140–159, ≥160
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: <120")    ~ 1L,
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: 120–129") ~ 2L,
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: 130–139") ~ 3L,
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: 140–159") ~ 4L,
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: ≥160")    ~ 5L,
 
-      # Diastolic BP: <80, 80–89, 90–99, ≥100
       predictor == "dbp_cat" & str_detect(variable_label, "Diastolic blood pressure category: <80")    ~ 1L,
       predictor == "dbp_cat" & str_detect(variable_label, "Diastolic blood pressure category: 80–89")  ~ 2L,
       predictor == "dbp_cat" & str_detect(variable_label, "Diastolic blood pressure category: 90–99")  ~ 3L,
       predictor == "dbp_cat" & str_detect(variable_label, "Diastolic blood pressure category: ≥100")   ~ 4L,
 
-      # Waist-to-height ratio: <0.5, 0.5–0.59, ≥0.6
       predictor == "whtr_cat" & str_detect(variable_label, "Waist-to-height ratio category: <0.5")     ~ 1L,
       predictor == "whtr_cat" & str_detect(variable_label, "Waist-to-height ratio category: 0.5–0.59") ~ 2L,
       predictor == "whtr_cat" & str_detect(variable_label, "Waist-to-height ratio category: ≥0.6")     ~ 3L,
@@ -2958,12 +2966,10 @@ uni1_secondary_long <- uni1_secondary_long |>
   clean_vitD_DII_labels() |>
   mutate(
     rank2 = case_when(
-      # Education: <9, 9–12, >12
       predictor == "educ" & str_detect(variable_label, "Education: <9 years")       ~ 1L,
       predictor == "educ" & str_detect(variable_label, "Education: 9–12 years")     ~ 2L,
       predictor == "educ" & str_detect(variable_label, "Education: >12 years")      ~ 3L,
 
-      # BMI: Underweight, Normal, Overweight, Obesity I, II, III
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Underweight") ~ 1L,
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Normal")     ~ 2L,
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Overweight") ~ 3L,
@@ -2971,25 +2977,21 @@ uni1_secondary_long <- uni1_secondary_long |>
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Obesity II") ~ 5L,
       predictor == "bmi_cat" & str_detect(variable_label, "BMI category: Obesity III")~ 6L,
 
-      # Vitamin D category: <20, 20–29, ≥30
       predictor == "vitD25oh_cat" & str_detect(variable_label, "Vitamin D category: <20")   ~ 1L,
       predictor == "vitD25oh_cat" & str_detect(variable_label, "Vitamin D category: 20–29") ~ 2L,
       predictor == "vitD25oh_cat" & str_detect(variable_label, "Vitamin D category: ≥30")   ~ 3L,
 
-      # Systolic BP: <120, 120–129, 130–139, 140–159, ≥160
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: <120")    ~ 1L,
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: 120–129") ~ 2L,
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: 130–139") ~ 3L,
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: 140–159") ~ 4L,
       predictor == "sbp_cat" & str_detect(variable_label, "Systolic blood pressure category: ≥160")    ~ 5L,
 
-      # Diastolic BP: <80, 80–89, 90–99, ≥100
       predictor == "dbp_cat" & str_detect(variable_label, "Diastolic blood pressure category: <80")    ~ 1L,
       predictor == "dbp_cat" & str_detect(variable_label, "Diastolic blood pressure category: 80–89")  ~ 2L,
       predictor == "dbp_cat" & str_detect(variable_label, "Diastolic blood pressure category: 90–99")  ~ 3L,
       predictor == "dbp_cat" & str_detect(variable_label, "Diastolic blood pressure category: ≥100")   ~ 4L,
 
-      # Waist-to-height ratio: <0.5, 0.5–0.59, ≥0.6
       predictor == "whtr_cat" & str_detect(variable_label, "Waist-to-height ratio category: <0.5")     ~ 1L,
       predictor == "whtr_cat" & str_detect(variable_label, "Waist-to-height ratio category: 0.5–0.59") ~ 2L,
       predictor == "whtr_cat" & str_detect(variable_label, "Waist-to-height ratio category: ≥0.6")     ~ 3L,
@@ -3302,7 +3304,7 @@ tbl_uni2_secondary
 
 Survey-weighted multivariable logistic regression models were used to assess the association between DII score and each disease outcome after adjustment for covariates of interest. Three models were generated. Model 1 adjusted for age and sex. Model 2 additionally adjusted for race/ethnicity, insurance status, poverty-income ratio, and education level. Model 3 further adjusted for BMI, physical activity, and smoking status. Results are shown in **Figure 2** for asthma, allergic rhinitis, inflammatory arthritis, diabetes, and hypertension and in **Figure 3** for eczema and food allergy.
 
-Overall, there were few significant associations across the adjusted models. For asthma, no statistically significant associations were detected, although Model 3 suggested a possible, non-significant protective trend (OR 0.96, 95% CI 0.91–1.00; p=0.059). For allergic rhinitis, higher DII was associated with lower odds in Model 1 (OR 0.95, 95% CI 0.91–0.99; p=0.01), but this association was not statistically significant in Model 2 (OR 0.96, 95% CI 0.92–1.00; p=0.054) and Model 3 (OR 0.97, 95% CI 0.92–1.01; p=0.113). Among cardiometabolic outcomes, higher DII was associated with increased odds of hypertension in Model 1 (OR 1.07, 95% CI 1.03–1.12; p\<0.001) and Model 2 (OR 1.06, 95% CI 1.01–1.10; p=0.011). However, this association was no longer significant in Model 3 (OR 1.03, 95% CI 0.99–1.08; p=0.149). For secondary outcomes, higher DII was associated with decreased odds of food allergy only in Model 1 (OR 0.93, 95% CI 0.89–0.98; p=0.006).
+Overall, there were few significant associations across the models. For allergic rhinitis, higher DII was associated with lower odds in Model 1 (OR 0.95, 95% CI 0.91–0.99; p=0.01), but this association was not statistically significant in Model 2 (OR 0.96, 95% CI 0.92–1.00; p=0.054) or Model 3 (OR 0.97, 95% CI 0.92–1.01; p=0.113). Among cardiometabolic outcomes, higher DII was associated with increased odds of hypertension in Model 1 (OR 1.07, 95% CI 1.03–1.12; p\<0.001) and Model 2 (OR 1.06, 95% CI 1.01–1.10; p=0.011). However, this association was not statistically significant in Model 3 (OR 1.03, 95% CI 0.99–1.08; p=0.149). For secondary outcomes, higher DII was associated with decreased odds of food allergy only in Model 1 (OR 0.93, 95% CI 0.89–0.98; p=0.006).
 
 ```{r}
 # Adjusted multivariable models----------------------------------------------------------------
@@ -3320,7 +3322,6 @@ make_dii_formula <- function(outcome_var, covariates) {
 }
 
 ## Fit models for primary outcomes
-
 fit_primary_models <- imap(
   outcome_list,
   ~ list(
@@ -3345,7 +3346,6 @@ fit_primary_models <- imap(
 )
 
 ## Fit models for secondary outcomes
-
 fit_secondary_models <- imap(
   outcome_list_secondary,
   ~ list(
@@ -3420,7 +3420,6 @@ extract_dii_from_model <- function(fit, outcome_label, model_label) {
 }
 
 ## Primary outcomes in adjusted models 1–3
-
 dii_primary_models_long <- map_dfr(
   fit_primary_models,
   function(m) {
@@ -3433,7 +3432,6 @@ dii_primary_models_long <- map_dfr(
 )
 
 ## Secondary outcomes in adjusted models 1–3
-
 dii_secondary_models_long <- map_dfr(
   fit_secondary_models,
   function(m) {
@@ -3446,8 +3444,7 @@ dii_secondary_models_long <- map_dfr(
 )
 
 # Forest plots for multivariable associations--------------------------------------------------
-
-## Helper to construct label columns for OR and p values
+## Helper function to construct label columns for OR and p values
 add_or_p_labels <- function(df) {
   df |>
     mutate(
@@ -3481,7 +3478,7 @@ dii_primary_plot_data <- dii_primary_models_long |>
     )
   )
 
-## Compute axis limits based on observed CIs with padding
+## Compute axis limits
 dii_primary_limits <- dii_primary_plot_data |>
   filter(!is_ne) |>
   summarise(
@@ -3608,7 +3605,7 @@ dii_secondary_forest_plot
 
 **Effect modification analyses**
 
-Effect modification analyses were performed to assess whether the association between DII and each disease outcome differed by sex, BMI category, or vitamin D status. Results are shown in **Table 9** for asthma, allergic rhinitis, inflammatory arthritis, diabetes, and hypertension, and in **Table 10** for eczema and food allergy. Overall, only a few interactions were statistically significant and generally without a clear trend across categories. For inflammatory arthritis, BMI significantly modified the association (p\<0.001), but without a clear trend across BMI categories. For diabetes, vitamin D status significantly modified the association (p\<0.001), with those with vitamin D deficiency exhibiting a higher association between DII and diabetes (OR 1.70, 95% CI 1.13–2.57), while those with vitamin D insufficiency exhibiting a reduced association (OR 0.81, 95% CI 0.65–0.99). For secondary outcomes, eczema demonstrated a significant interaction with BMI (p=0.012), with an increased association seen among those who were underweight (OR 2.20, 95% CI 1.25–3.88). No significant interaction terms were observed for sex.
+Effect modification analyses were performed to assess whether the association between DII and each disease outcome differed by sex, BMI category, or vitamin D status. Results are shown in **Table 9** for asthma, allergic rhinitis, inflammatory arthritis, diabetes, and hypertension, and in **Table 10** for eczema and food allergy. Overall, only a few interactions were statistically significant and generally without a clear trend across categories. For inflammatory arthritis, BMI significantly modified the association (p\<0.001), but without a clear trend across BMI categories. For diabetes, vitamin D status significantly modified the association (p\<0.001), with those with vitamin D deficiency exhibiting a higher association between DII and diabetes (OR 1.70, 95% CI 1.13–2.57). However, those with vitamin D insufficiency exhibited a reduced association (OR 0.81, 95% CI 0.65–0.99). For secondary outcomes, eczema demonstrated a significant interaction with BMI (p=0.012), with an increased association seen among those who were underweight (OR 2.20, 95% CI 1.25–3.88). No significant interaction terms were observed for sex.
 
 ```{r}
 # Effect modification analyses-----------------------------------------------------------------
@@ -3767,7 +3764,7 @@ build_effectmod_display <- function(df) {
       out_name <- grp$outcome_lab[[1]]
       mod_lab  <- grp$modifier_label[[1]]
 
-      # Fix modifier text
+      ### Fix modifier text
       mod_label_clean <- case_when(
         mod_lab == "BMI category"       ~ "by BMI category",
         mod_lab == "Vitamin D category" ~ "by Vitamin D category",
@@ -3846,8 +3843,7 @@ effectmod_primary_long <- effectmod_primary_long |>
       modifier_var == "vitD25oh_cat" ~ factor(level, levels = vitD_level_order),
       TRUE                           ~ factor(level)
     ),
-    ## Enforce outcome order for primary outcomes:
-    ## Asthma, Allergic rhinitis, Inflammatory arthritis, Diabetes, Hypertension
+    ### Outcome order for primary outcomes
     outcome_lab = factor(
       outcome_lab,
       levels = c(
@@ -4006,9 +4002,9 @@ tbl_effectmod_secondary
 
 **Machine learning analyses**
 
-Exploratory machine learning models were developed to identify predictors of disease beyond those detected in traditional regression analyses. For each outcome, four algorithms – namely LR, LASSO, RF, and XGB – were trained on one of two predictor sets: (1) core demographic, psychosocial, clinical, and dietary covariates, including the total DII score, and (2) quartiles of individual nutrient intakes. ROC curves (**Figures 4-5**) and AUROC values (**Tables 11–12**) summarize model performance for models with core covariates and nutrients only, respectively. Diabetes demonstrated the strongest performance (AUROC 0.83–0.92), followed by hypertension (AUROC 0.72–0.76) and inflammatory arthritis (AUROC 0.64–0.76). Performance was more modest for allergic rhinitis (AUROC 0.62–0.66) and asthma (AUROC 0.61–0.62), and was notably lower for food allergy (AUROC 0.49–0.59) and eczema (AUROC 0.44–0.60). Across all outcomes, models trained using nutrient-intake quartiles had comparatively reduced discrimination (AUROC 0.46–0.65).
+Exploratory machine learning models were developed to identify predictors of disease beyond those detected in traditional regression analyses. For each outcome, four algorithms – namely LR, LASSO, RF, and XGB – were trained on one of two predictor sets: (1) core demographic, psychosocial, clinical, and dietary covariates, including the total DII score, and (2) quartiles of individual nutrient intakes. ROC curves (**Figures 4-5**) and AUROC values (**Tables 11–12**) summarize model performance for models with either core covariates or nutrients only, respectively. Diabetes demonstrated the strongest performance (AUROC 0.83–0.92), followed by hypertension (AUROC 0.72–0.76) and inflammatory arthritis (AUROC 0.64–0.76). Performance was more modest for allergic rhinitis (AUROC 0.62–0.66) and asthma (AUROC 0.61–0.62), and was notably lower for food allergy (AUROC 0.49–0.59) and eczema (AUROC 0.44–0.60). Across all outcomes, models trained using nutrient-intake quartiles showed minimal discriminative ability (AUROC 0.46–0.65).
 
-Feature importance analyses were performed to acquire insight into potentially important predictors related to disease outcomes. In core covariate models (**Figures 6–12**), the DII score consistently ranked among the top 10 predictors for every disease outcome. For diabetes and hypertension, important features included markers of hyperglycemia, hyperlipiedemia, and adiposity, while DII scores, cardiometabolic factors, and psychosocial variables were influential in models for allergic outcomes. In contrast, nutrient-only models (**Figures 16–19**) demonstrated inconsistent patterns across disease outcomes. Nutrients such as PUFA, omega-6 fats, caffeine, total caloric intake, iron, and B vitamins appeared recurrently but without disease-specific consistency.
+Feature importance analyses were performed to acquire insight into potentially important predictors related to disease outcomes. In analyses with core covariate predictors (**Figures 6–12**), the DII score consistently ranked among the top 10 predictors for every disease outcome in at last three out of four models per disease outcome. For allergic and immunologic outcomes, DII scores, cardiometabolic factors, and psychosocial variables were influential predictors. For diabetes and hypertension, influential predictors included elevated HbA1c, elevated lipid markers, and adiposity. In contrast to the core covariate models, nutrient-only models (**Figures 16–19**) demonstrated inconsistent patterns across diseases. Nutrients such as polyunsaturated fatty acids (PUFAs), omega-6 fatty accids, caffeine, total caloric intake, iron, and B vitamins were observed but without a clear disease-specific consistency.
 
 ```{r}
 # Model run options, outcome definitions, and helper functions---------------------------------
@@ -4454,7 +4450,7 @@ run_ml_pipeline <- function(predictors, predictor_set_label) {
     ~ get_best_params(.x)
   )
 
-  ## Final model fits and test-set performance
+  ## Final model fits and test set performance
   fit_and_evaluate_final_models <- function(outcome_name) {
     outcome_info  <- ml_outcomes[[outcome_name]]
     resampling    <- ml_resampling[[outcome_name]]
@@ -4597,7 +4593,7 @@ run_ml_pipeline <- function(predictors, predictor_set_label) {
     ~ fit_and_evaluate_final_models(.y)
   )
 
-  ## Performance summary data
+  ### Performance summary data
   ml_performance_summary_long <- purrr::map_dfr(
     names(ml_final_results),
     ~ ml_final_results[[.x]]$metrics
@@ -4641,7 +4637,7 @@ run_ml_pipeline <- function(predictors, predictor_set_label) {
       AUROC            = "AUROC"
     )
 
-  ## Variable importance data
+  ### Variable importance data
   get_vi_all_models_for_outcome <- function(outcome_name) {
     fits <- ml_final_results[[outcome_name]]$final_fits
 
@@ -4673,7 +4669,7 @@ run_ml_pipeline <- function(predictors, predictor_set_label) {
     ~ get_vi_all_models_for_outcome(.y)
   )
 
-  ## Pipeline outputs
+  ### Pipeline outputs
   list(
     predictor_set_label      = predictor_set_label,
     predictors               = predictors,
@@ -5099,13 +5095,13 @@ print(vi_nutr_eczema)
 print(vi_nutr_food_allergy)
 ```
 
-## Conclusion
+## Conclusion and Discussion
 
-In this nationally representative cohort of U.S. adults aged 20–40 years, I evaluated whether dietary inflammatory potential, measured via the Dietary Inflammatory Index, was associated with allergic, immunologic, and cardiometabolic outcomes. This was performed using both survey-weighted regression and exploratory machine learning analyses. In regression analyses, signals for higher allergic, immunologic, and/or cardiometabolic disease burden and pro-inflammatory diet were detected, but these associations largely attenuated after adjustment for sociodemographic, behavioral, and anthropometric factors. Nutrient-specific analyses identified a few potentially protective micro- and macronutrients, though most associations were modest and not consistently significant. Interestingly, in machine learning models, DII consistently ranked among the top predictors in models that included core covariates, including sociodemographic and clinical variables, although machine learning model findings should be interpreted with caution given they were not robust in their predictive performance. Overall while DII may not independently predict diseases, it may play an incremental role in driving these diseases.
+In this nationally representative cohort of U.S. adults aged 20–40 years, I evaluated whether dietary inflammatory content, measured via the Dietary Inflammatory Index, was associated with allergic, immunologic, and cardiometabolic outcomes. This was performed using both survey-weighted regression and exploratory machine learning analyses. In regression analyses, modest signals for increased risk of allergic, immunologic, and/or cardiometabolic disease and pro-inflammatory diet were detected, but these associations were largely attenuated after adjustment for sociodemographic, behavioral, and anthropometric factors. Nutrient-specific analyses identified a few potentially protective micro- and macronutrients, though most associations were modest and not consistently significant. Interestingly, in machine learning models, DII consistently ranked among the top predictors in models that included core covariates from multiple domains, although machine learning model findings should be interpreted with caution given they were not robust in their predictive performance. Overall while DII may not independently predict diseases, it likely plays an incremental role in driving these diseases.
 
-This study has several strengths, including use of nationally representative NHANES data, implementaiton of survey weighting, inclusion of a validated dietary inflammatory score and nutrient composition database, and the use of complementary analytic frameworks to capture both adjusted associations and potentially important predictors in the context of machine learning analyses. However, several important limitations must be acknowledged. First, the study’s cross-sectional design precludes causal inference. Second, the accuracy of self-reported medical diagnoses and 24-hour dietary recalls may be inaccurate. Moreover, self-reported eczema and food allergy were only available in restricted NHANES cycles, a reflection of survey cycle heterogeneity and shifting survey priorities. As analyses relied on complete cases, the potential impact of missing data on the results is unclear. For the machine learning models, several outcomes yielded AUROC values near 0.5, indicating limited predictive performance ability and, in turn, limiting the interpretation of the importance of topmost predictors. In addition, the cross-sectional nature of the study limited the ability of these models to capture temporal patterns.
+This study has several strengths, including use of nationally representative NHANES data with implementation of survey weighting, inclusion of a validated dietary inflammatory score and nutrient composition database, and the use of complementary analytic approaches to capture both adjusted associations and potentially important, machine learning-derived predictors. However, several important limitations must be acknowledged. First, the study’s cross-sectional design precludes causal inference. Second, the accuracy of self-reported medical diagnoses and 24-hour dietary recalls may be inaccurate. Moreover, self-reported eczema and food allergy were only available in restricted NHANES cycles, a reflection of survey cycle heterogeneity and shifting survey priorities. As analyses relied on complete cases, the potential impact of missing data on the results is unclear. For the machine learning models, several outcomes yielded AUROC values near 0.5, indicating limited predictive performance ability. In addition, the cross-sectional nature of the study limited the ability of these models to capture temporal patterns.
 
-Future directions for this work include examining broader age ranges and a wider set of candidate diseases to better characterize how dietary inflammatory potential relates to risk across the lifespan. Longitudinal cohort studies, in which dietary patterns and clinical outcomes are tracked over time, would offer a complementary approach for addressing these questions and could be paired with multi-omic data, such as immune and metabolic biomarkers and microbiome profiles. In addition, future machine learning models could focus on enhancing model performance by identifying a more predictive set of features not considered in this analysis. Continued study and refinement of disease risk models that integrate dietary information may reveal insights to inform prevention and management strategies for chronic immune-mediated and metabolic diseases.
+Future directions for this work include examining broader age ranges and a wider set of candidate diseases to further characterize how dietary inflammatory potential relates to risk across the lifespan. Longitudinal cohort studies, in which dietary patterns and clinical outcomes are tracked over time, would offer a complementary approach for addressing these questions and could be paired with multi-omic data, such as immune and metabolic biomarkers and microbiome profiles. In addition, future machine learning models could focus on enhancing model performance by identifying a more predictive set of features beyond those considered in the current analysis. Continued study and refinement of disease risk models that integrate dietary information may reveal insights to inform prevention and management strategies for chronic immune-mediated and metabolic diseases.
 
 ## References
 
@@ -5131,4 +5127,4 @@ Future directions for this work include examining broader age ranges and a wider
 
 ## Acknowledgements
 
-I would like to thank Drs. Robert Grundmeier and Rich Tsui for their guidance on the analytic and methodological approaches used in this study. I am also grateful to the BMIN 5030 professors and teaching assistants for helping me expand my foundation in data analysis throughout the course. In addition to consulting with my mentors, several references and tools were utilized to aid in completing this project, including prior course lecture slides, practicum exercises, and online troubleshooting resources including Stack Overflow, Posit Forum, and ChatGPT (OpenAI). ChatGPT was used for selective assistance with code debugging and for designing template helper functions to automate repetitive elements of data processing. All analytic decisions, data processing, modeling choices, and final code were conceptualized, implemented, and reviewed by me with input from my co-mentors. I also wish to acknowledge the [dietaryindexNDP](https://github.com/zxucmu/dietaryindexNDP) package, which enabled calculation of DII scores that were key to this analysis.
+I would like to thank Drs. Robert Grundmeier and Rich Tsui for their guidance on the analytic and methodological approaches used in this study. I am also grateful to the BMIN 5030 professors and teaching assistants for helping me expand my foundation in data analysis throughout the course. In addition to consulting with my mentors, several references and tools were utilized to aid in completing this project, including prior course lecture slides, practicum exercises, and online troubleshooting resources including Stack Overflow, Posit Forum, and ChatGPT (OpenAI). Selective assistance from ChatGPT was used for debugging and developing helper functions to automate repetitive data processing tasks as I refined the cohort. All analytic decisions, data processing, modeling choices, and code were conceptualized, implemented, and reviewed by me with input from my co-mentors. I also wish to acknowledge the [dietaryindexNDP](https://github.com/zxucmu/dietaryindexNDP) package, which enabled calculation of DII scores that were key to this analysis.
